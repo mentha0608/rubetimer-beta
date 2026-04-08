@@ -1,0 +1,518 @@
+/* ========================================
+   1. テーマ変数
+======================================== */
+:root {
+  --bg: #0b1220;
+  --panel: #1a2436;
+  --panel-2: #0f172a;
+  --text: #f8fafc;
+  --muted: #cbd5e1;
+  --shadow: 0 10px 28px rgba(0, 0, 0, 0.32);
+  --radius: 20px;
+
+  /* サークル（黄床）系 */
+  --circle-base: #8d7f12;
+  --circle-top: #a89620;
+  --circle-active-top: #d5c247;
+  --circle-active-bottom: #b19b1e;
+  --circle-ring: rgba(245, 222, 92, 0.42);
+
+  /* グランド系 */
+  --grand-top: #f05a22;
+  --grand-bottom: #c63d0d;
+  --grand-active-top: #ff8f63;
+  --grand-active-bottom: #e25b28;
+  --grand-ring: rgba(255, 138, 92, 0.35);
+
+  /* サブ/補正系 */
+  --sub-top: #475569;
+  --sub-bottom: #334155;
+  --sub-active-top: #64748b;
+  --sub-active-bottom: #475569;
+  --sub-ring: rgba(148, 163, 184, 0.28);
+
+  /* Reset系 */
+  --reset-top: #2563eb;
+  --reset-bottom: #1d4ed8;
+  --reset-active-top: #4f83f1;
+  --reset-active-bottom: #2563eb;
+  --reset-ring: rgba(96, 165, 250, 0.30);
+}
+
+/* ========================================
+   2. 全体共通
+======================================== */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #08111f 0%, #0b1220 100%);
+  color: var(--text);
+  font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;   /* stretch をやめる */
+  padding: 20px;
+  overflow-x: hidden;
+  overflow-y: auto;          /* 必要なら縦スクロール */
+}
+
+.app {
+  width: min(100%, 760px);
+  display: grid;
+  gap: 16px;
+  align-content: start;      
+  align-self: flex-start;    /* 上部に固定 */
+}
+
+.main-ui {
+  display: grid;
+  gap: 16px;
+  align-content: start;      /* 上部に固定 */
+}
+
+.panel {
+  background: var(--panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+/* ========================================
+   3. タイマー表示
+======================================== */
+.timer-panel {
+  text-align: center;
+  padding: 22px 18px;
+}
+
+.timer {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.04em;
+  line-height: 1;
+  margin-bottom: 12px;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.timer-main {
+  display: inline-block;
+  width: 2ch;
+  text-align: right;
+  font-size: clamp(68px, 16vw, 120px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.timer-dot {
+  display: inline-block;
+  width: 0.4ch;
+  text-align: center;
+  color: #93c5fd;
+  font-size: clamp(32px, 8vw, 56px);
+  font-weight: 700;
+}
+
+.timer-sub {
+  display: inline-block;
+  width: 1ch;
+  text-align: left;
+  font-size: clamp(32px, 8vw, 56px);
+  font-weight: 700;
+  color: #93c5fd;
+}
+
+.status {
+  display: grid;
+  gap: 10px;
+}
+
+.status-row {
+  background: var(--panel-2);
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-align: left;
+  line-height: 1.25;
+}
+
+.status-label {
+  display: inline-block;
+  min-width: 3.2em;
+  color: #93c5fd;
+  font-weight: 700;
+  font-size: clamp(20px, 4.2vw, 28px);
+  margin-right: 8px;
+}
+
+.status-value {
+  color: var(--text);
+  font-weight: 800;
+  font-size: clamp(24px, 5vw, 36px);
+}
+
+/* ========================================
+   4. ボタンエリア
+======================================== */
+.controls {
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 18px;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.08s ease, filter 0.12s ease, box-shadow 0.16s ease, opacity 0.12s ease;
+  box-shadow: var(--shadow);
+}
+
+.btn:hover {
+  filter: brightness(1.6);
+}
+
+.btn:active {
+  transform: scale(0.985);
+}
+
+.btn:focus-visible {
+  outline: 3px solid #fbbf24;
+  outline-offset: 3px;
+}
+
+/* --- メインボタン --- */
+.main {
+  height: 96px;
+  font-size: clamp(26px, 5vw, 34px);
+}
+
+/* --- 同期 / 補正ボタン --- */
+.sub,
+.adjust {
+  height: 46px;
+  font-size: clamp(20px, 4vw, 24px);
+}
+
+/* --- リセットボタン --- */
+.reset {
+  height: 50px;
+  font-size: clamp(22px, 4vw, 26px);
+}
+
+/* --- 種別色 --- */
+.circle {
+  background: linear-gradient(180deg, var(--circle-top) 0%, var(--circle-base) 100%);
+}
+
+.grand {
+  background: linear-gradient(180deg, var(--grand-top) 0%, var(--grand-bottom) 100%);
+}
+
+.sub,
+.adjust {
+  background: linear-gradient(180deg, var(--sub-top) 0%, var(--sub-bottom) 100%);
+}
+
+.reset {
+  background: linear-gradient(180deg, var(--reset-top) 0%, var(--reset-bottom) 100%);
+}
+
+/* --- アクティブ表示 --- */
+.is-dark {
+  filter: brightness(0.55) saturate(0.8);
+  opacity: 0.82;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+.is-normal {
+  filter: brightness(1);
+  opacity: 1;
+}
+
+.is-bright {
+  filter: brightness(1.16) saturate(1.06);
+  opacity: 1;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.06), var(--shadow);
+}
+
+.is-active-timer {
+  position: relative;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.12),
+    0 0 0 6px rgba(255, 255, 255, 0.05),
+    var(--shadow);
+}
+
+/* ========================================
+   5. 設定エリア
+======================================== */
+.settings-wrap {
+  padding: 0;                /* ← 閉じた時の余白を消す */
+  overflow: hidden;
+}
+
+.settings-toggle {
+  width: 100%;
+}
+
+.settings-summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 800;
+  color: #93c5fd;
+  user-select: none;
+  padding: 14px 18px;        /* ← summary 自体に余白を持たせる */
+}
+
+.settings-summary::-webkit-details-marker {
+  display: none;
+}
+
+.settings-summary::after {
+  content: "▼";
+  float: right;
+  font-size: 14px;
+  transition: transform 0.15s ease;
+}
+
+.settings-toggle[open] .settings-summary::after {
+  transform: rotate(180deg);
+}
+
+.settings {
+  display: grid;
+  gap: 16px;
+  padding: 0 18px 18px;      /* ← 開いた時だけ内側余白 */
+  max-height: min(40vh, 360px); /* ← 今後項目が増えても暴れない */
+  overflow-y: auto;          /* ← 開いた時だけ中で縦スクロール */
+}
+
+.voice-options {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.voice-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting-row {
+  display: grid;
+  gap: 8px;
+}
+
+.setting-row label {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.setting-item label span {
+  font-weight: 800; 
+  color: #93c5fd; 
+}
+
+.toggle-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.toggle-chip {
+  position: relative;
+  display: block;
+}
+
+.toggle-chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle-chip span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.toggle-chip input:checked + span {
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #60a5fa;
+  color: #f8fafc;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.18);
+}
+
+.toggle-chip input:focus-visible + span {
+  outline: 3px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+input[type="range"],
+input[type="number"] {
+  width: 100%;
+}
+
+input[type="number"] {
+  background: #0f172a;
+  color: white;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.setting-help,
+.footer-note {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.footer-note {
+  text-align: center;
+}
+
+/* ========================================
+   5.5 メモ / 案内エリア
+======================================== */
+.notes-wrap {
+  padding: 0;
+  overflow: hidden;
+}
+
+.notes-toggle {
+  width: 100%;
+}
+
+.notes-summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 800;
+  color: #93c5fd;
+  user-select: none;
+  padding: 14px 18px;
+}
+
+.notes-summary::-webkit-details-marker {
+  display: none;
+}
+
+.notes-summary::after {
+  content: "▼";
+  float: right;
+  font-size: 14px;
+  transition: transform 0.15s ease;
+}
+
+.notes-toggle[open] .notes-summary::after {
+  transform: rotate(180deg);
+}
+
+.notes {
+  display: grid;
+  gap: 18px;
+  padding: 0 18px 18px;
+  max-height: min(42vh, 360px);
+  overflow-y: auto;
+  text-align: left;
+}
+
+.note-block {
+  display: grid;
+  gap: 8px;
+}
+
+.note-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #cbd5e1;
+}
+
+.note-content {
+  display: grid;
+  gap: 6px;
+  color: #94a3b8;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.note-content p {
+  margin: 0;
+}
+/* ========================================
+   6. レスポンシブ
+======================================== */
+@media (max-width: 520px) {
+  body {
+    padding: 12px;
+  }
+
+  .app {
+    gap: 12px;
+  }
+
+  .main-ui {
+    gap: 12px;
+  }
+  
+  .panel {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .controls {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .row2 {
+    gap: 10px;
+  }
+
+  .main {
+    height: 88px;
+  }
+
+  .sub,
+  .adjust {
+    height: 44px;
+  }
+}

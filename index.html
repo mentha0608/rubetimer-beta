@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rubetimer v2.21</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <section class="main-ui">
+
+    <!-- ========================================
+         タイマー表示
+    ======================================== -->
+    <section class="panel timer-panel">
+      <div class="timer" aria-label="タイマー表示">
+        <span id="timerMain" class="timer-main">00</span>
+        <span class="timer-dot">.</span>
+        <span id="timerSub" class="timer-sub">0</span>
+      </div>
+
+      <div class="status">
+        <div class="status-row">
+        <span class="status-label">現在：</span>
+        <span id="currentSafe" class="status-value">待機</span>
+        </div>
+        <div class="status-row">
+        <span class="status-label">備考：</span>
+        <span id="nextSafe" class="status-value">-</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================
+         操作ボタン
+    ======================================== -->
+    <section class="controls" aria-label="操作ボタン">
+
+      <!-- サークル系 -->
+      <button id="btnCircle" class="btn main circle">
+        サークルカラミティ
+      </button>
+
+      <div class="row2">
+        <button id="btnCircle1" class="btn sub">1</button>
+        <button id="btnCircle2" class="btn sub">2</button>
+      </div>
+
+      <!-- グランド系 -->
+      <button id="btnGrand" class="btn main grand">
+        グランドカラミティ
+      </button>
+
+      <div class="row2">
+        <button id="btnGrand1" class="btn sub">1虹</button>
+        <button id="btnGrand2" class="btn sub">2光</button>
+      </div>
+
+      <!-- 補正 -->
+      <div class="row2">
+        <button id="btnAdjustPlus" class="btn adjust">+0.5</button>
+        <button id="btnAdjustMinus" class="btn adjust">-0.5</button>
+      </div>
+
+      <!-- リセット -->
+      <button id="btnReset" class="btn reset">
+        Reset
+      </button>
+    </section>
+ </section> <!-- main-ui の閉じ子--> 
+    <!-- ========================================
+         設定
+    ======================================== -->
+    <section class="panel settings-wrap" aria-label="設定">
+    <details class="settings-toggle">
+        <summary class="settings-summary">設定</summary>
+
+        <div class="settings">
+        <div class="setting-row">
+            <label>音声モード</label>
+            <div class="voice-options">
+            <label><input type="radio" name="voiceMode" value="simple"> シンプル</label>
+            <label><input type="radio" name="voiceMode" value="voicevox" checked> VOICEVOX</label>
+            </div>
+        </div>
+
+        <div class="setting-item">
+            <label for="voiceVolume">
+                VOICE音量〈<span id="voiceVolumeValue">85</span>〉
+            </label>
+
+            <div class="range-wrap">
+                <input id="voiceVolume" type="range" min="0" max="100" value="85">
+            </div>
+        </div>
+
+        <div class="setting-item">
+            <label for="seVolume">
+                SE音量〈<span id="seVolumeValue">70</span>〉
+            </label>
+
+            <div class="range-wrap">
+                <input id="seVolume" type="range" min="0" max="100" value="70">
+            </div>
+        </div>
+
+        <div class="setting-row">
+        <label>事前読み上げ秒数</label>
+        <div class="toggle-group" role="radiogroup" aria-label="事前読み上げ秒数">
+            <label class="toggle-chip">
+            <input type="radio" name="announceLead" value="7" checked>
+            <span>7秒</span>
+            </label>
+            <label class="toggle-chip">
+            <input type="radio" name="announceLead" value="10">
+            <span>10秒</span>
+            </label>
+        </div>
+        <div class="setting-help">基本は7秒。必要に応じて10秒へ切り替え。</div>
+        </div>
+
+        <div class="setting-row">
+        <label>次案内を再生する</label>
+        <div class="toggle-group" role="radiogroup" aria-label="次案内を再生する">
+            <label class="toggle-chip">
+            <input type="radio" name="playNextVoice" value="on" checked>
+            <span>ON</span>
+            </label>
+            <label class="toggle-chip">
+            <input type="radio" name="playNextVoice" value="off">
+            <span>OFF</span>
+            </label>
+        </div>
+        </div>
+    </details>
+    </section>
+    <!-- ========================================
+     使い方・更新履歴
+    ======================================== -->
+    <section class="panel notes-wrap" aria-label="使い方・更新履歴">
+    <details class="notes-toggle">
+        <summary class="notes-summary">使い方・更新履歴</summary>
+
+        <div class="notes">
+        <section class="note-block">
+            <h2 class="note-title">使い方</h2>
+            <div class="note-content">
+            <p>・ボタンは吹き出しが出た瞬間に押す想定です。</p>
+            <p>・ルベランギスの腕が１周したのを目安に押す程度です。。</p>
+            <p>・少し遅れたと思った場合、押すのは「-0.5」です。「1」「2」ボタンは途中合わせ用です。</p>
+            <p>・設定から事前読み上げ秒数を 7秒 / 10秒 で選べます。</p>
+            <p>・次案内が不要な場合は、設定から再生をOFFにできます。</p>
+            </div>
+        </section>
+
+        <section class="note-block">
+            <h2 class="note-title">更新履歴</h2>
+            <div class="note-content">
+            <p><strong>v2.21</strong> - グランドの「網・線上・外」音声が再生されない不具合を修正</p>
+            <p>　　　- 設定の保存 / 読み込み処理を修正</p>
+
+            <p><strong>v2.20</strong> - タイマー基準を爆発基準から床出現基準へ変更</p>
+            <p>　　　- サークル / グランドのLap値を実測ベースで更新</p>
+            <p>　　　- 初回床までの初期値を調整（サークル 5.7秒 / グランド 6.8秒）</p>
+            <p>　　　- 次案内のタイミングを見直し</p>
+
+            <p><strong>v2.11</strong> - 設定UIを調整</p>
+            <p>　　　- 事前読み上げ秒数を選択式に変更</p>
+            <p>　　　- 次案内の再生ON/OFF設定を追加</p>
+            <p>　　　- 音量表示を設定値連動に修正</p>
+
+            <p><strong>v2.10</strong> - ボタンを押すタイミングを「吹き出しの出ている間」変更</p>
+            <p><strong>v2.02</strong> - 「中央大・線上と外」が読まれるように修正</p>
+            <p><strong>v2.01</strong> - ループが正常に作用していないバグをFIX</p>
+            <p>　　　- ボタンのライティングが働いていなかったバグ修正</p>
+            <p>　　　- 小数点が2個ついてしまうバグの修正</p>
+            <p>制作：mentha0608</p>
+            <p>音声：VOICEVOX:四国めたん</p>
+            </div>
+        </section>
+        </div>
+    </details>  
+    </section>
+
+    <!-- ========================================
+         フッター
+    ======================================== -->
+    <div class="footer-note">
+      Rubetimer v2.21｜ローカル設定保存版<br>
+    </div>
+
+  </main>
+
+  <script src="timer.js"></script>
+</body>
+</html>
