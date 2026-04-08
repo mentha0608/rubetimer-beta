@@ -1,5 +1,5 @@
 // Rubetimer
-// Version: v2.22beta
+// Version: v2.21
 // Build: 2026-04-02
 // Author: mentha0608
 // Voice: VOICEVOX:四国めたん
@@ -8,7 +8,6 @@
 // ・高精度タイマー（performance.now + requestAnimationFrame）
 // ・ラップ時間は0.25秒単位で丸めて利用
 // ・床出現タイミング基準で案内
-// ・beta版ではSafari対応テスト中
 
 (() => {
   'use strict';
@@ -325,9 +324,63 @@
   let activeAudio = null;
   let activeSeAudio = null;
   let activeSequenceToken = 0;
+  const audioPool = new Map();
   let audioUnlocked = false;
   let audioUnlocking = false;
-  const audioCache = new Map();
+
+  function getAudio(src) {
+    if (!audioPool.has(src)) {
+      const audio = new Audio(src);
+      audio.preload = 'auto';
+      audio.playsInline = true;
+      audio.setAttribute?.('playsinline', '');
+      audio.setAttribute?.('webkit-playsinline', '');
+      audioPool.set(src, audio);
+    }
+
+    return audioPool.get(src);
+  }
+
+  async function unlockAudio() {
+    if (audioUnlocked || audioUnlocking) return;
+
+    audioUnlocking = true;
+
+    const sources = collectVoiceSources();
+
+    try {
+      for (const src of sources) {
+        const audio = getAudio(src);
+
+        const prevMuted = audio.muted;
+        const prevVolume = audio.volume;
+
+        audio.muted = true;
+        audio.volume = 0;
+
+        try {
+          await audio.play();
+        } catch (err) {
+          console.warn('[unlockAudio] play failed', src, err);
+        }
+
+        try {
+          audio.pause();
+          audio.currentTime = 0;
+        } catch (err) {
+          console.warn('[unlockAudio] reset failed', src, err);
+        }
+
+        audio.muted = prevMuted;
+        audio.volume = prevVolume;
+      }
+
+      audioUnlocked = true;
+      console.log('[unlockAudio] complete', sources);
+    } finally {
+      audioUnlocking = false;
+    }
+  }
 
   function buildKana(parts = []) {
     return parts
@@ -380,130 +433,6 @@
     return audioConfig.voiceVolume;
   }
 
-
-  function createAudio(src) {
-    const audio = new Audio(src);
-    audio.preload = 'auto';
-    audio.playsInline = true;
-    audio.setAttribute?.('playsinline', '');
-    audio.setAttribute?.('webkit-playsinline', '');
-    return audio;
-  }
-
-  function getCachedAudio(src) {
-    if (!audioCache.has(src)) {
-      audioCache.set(src, createAudio(src));
-    }
-    return audioCache.get(src);
-  }
-
-  function collectModeVoiceParts(modeKey) {
-    const mode = getModeConfig(modeKey);
-    if (!mode || !Array.isArray(mode.phases)) return [];
-
-    const partKeys = new Set();
-
-    mode.phases.forEach((phase) => {
-      if (Array.isArray(phase?.leadParts)) {
-        phase.leadParts.forEach((key) => partKeys.add(key));
-      }
-
-      if (Array.isArray(phase?.nextParts)) {
-        phase.nextParts.forEach((key) => partKeys.add(key));
-      }
-    });
-
-    return [...partKeys];
-  }
-
-  function collectModeVoiceSources(modeKey) {
-    return collectModeVoiceParts(modeKey)
-      .map((key) => VOICE_PARTS[key]?.file)
-      .filter(Boolean)
-      .map((file) => `audio/${file}.wav`);
-  }
-
-  function preloadModeVoices(modeKey) {
-    const sources = collectModeVoiceSources(modeKey);
-
-    sources.forEach((src) => {
-      const audio = getCachedAudio(src);
-      try {
-        audio.load();
-      } catch (err) {
-        console.warn('[preloadModeVoices] load failed', src, err);
-      }
-    });
-
-    console.log('[preloadModeVoices]', modeKey, sources);
-  }
-
-  function createPlaybackAudio(src) {
-    const base = getCachedAudio(src);
-    const audio = base.cloneNode(true);
-
-    audio.preload = 'auto';
-    audio.playsInline = true;
-    audio.setAttribute?.('playsinline', '');
-    audio.setAttribute?.('webkit-playsinline', '');
-
-    return audio;
-  }
-
-  function collectVoiceSources() {
-    return [
-      'audio/timeSignal.mp3',
-      'audio/setvoice.wav',
-    ];
-  }
-
-  async function unlockAudio() {
-    if (audioUnlocked || audioUnlocking) return;
-
-    audioUnlocking = true;
-    const sources = collectVoiceSources();
-
-    try {
-      await Promise.all(
-        sources.map(async (src) => {
-          const audio = getCachedAudio(src);
-
-          const prevMuted = audio.muted;
-          const prevVolume = audio.volume;
-
-          audio.muted = true;
-          audio.volume = 0;
-
-          try {
-            await audio.play();
-          } catch (err) {
-            console.warn('[unlockAudio] play failed', src, err);
-          }
-
-          try {
-            audio.pause();
-          } catch (err) {
-            console.warn('[unlockAudio] pause failed', src, err);
-          }
-
-          try {
-            audio.currentTime = 0;
-          } catch (err) {
-            console.warn('[unlockAudio] rewind failed', src, err);
-          }
-
-          audio.muted = prevMuted;
-          audio.volume = prevVolume;
-        })
-      );
-
-      audioUnlocked = true;
-      console.log('[unlockAudio] complete');
-    } finally {
-      audioUnlocking = false;
-    }
-  }
-
   function stopSpeech() {
     if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
@@ -511,21 +440,21 @@
   }
 
   function stopAudioPlayback() {
-    activeSequenceToken++;
     console.log('[stopAudioPlayback] called');
 
-    if (activeAudio) {
-      try {
-        activeAudio.onended = null;
-        activeAudio.onerror = null;
-        activeAudio.onpause = null;
-        activeAudio.pause();
-        activeAudio.currentTime = 0;
-      } catch (e) {
-        console.warn('[stopAudioPlayback] error', e);
-      }
+    // 再生中のシーケンスを無効化
+    activeSequenceToken += 1;
 
-      activeAudio = null;
+    // 再生中の音声を止める
+    if (activeAudio) {
+        try {
+          activeAudio.pause();
+          activeAudio.currentTime = 0;
+        } catch (e) {
+          console.warn('[stopAudioPlayback] error while stopping audio', e);
+        }
+
+        activeAudio = null;
     }
   }
 
@@ -603,6 +532,19 @@
       .filter(Boolean);
   }
 
+  function collectVoiceSources() {
+    const voiceSources = Object.values(VOICE_PARTS)
+      .map((part) => part?.file)
+      .filter(Boolean)
+      .map((file) => `audio/${file}.wav`);
+
+    return [
+      'audio/timeSignal.mp3',
+      'audio/setvoice.wav',
+      ...voiceSources,
+    ];
+  }
+
   function resolveLeadFiles(arg1) {
     if (arg1 && typeof arg1 === 'object' && !Array.isArray(arg1)) {
       if (Array.isArray(arg1.leadParts)) {
@@ -623,36 +565,25 @@
 
   function playSingleAudio(src) {
     return new Promise((resolve) => {
-      const audio = createPlaybackAudio(src);
+      const audio = getAudio(src);
       activeAudio = audio;
 
-      let resolved = false;
-      const done = () => {
-        if (resolved) return;
-        resolved = true;
-
-        audio.onended = null;
-        audio.onerror = null;
-        audio.onpause = null;
-
-        if (activeAudio === audio) {
-          activeAudio = null;
-        }
-
-        resolve();
-      };
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch (e) {
+        console.warn('[playSingleAudio] reset error', src, e);
+      }
 
       audio.volume = seekVoiceVolume();
-      audio.muted = false;
 
       audio.onended = () => {
-        console.log('[audio ended]', src);
-        done();
+        resolve();
       };
 
       audio.onerror = (event) => {
         console.warn('[audio error]', src, event);
-        done();
+        resolve();
       };
 
       audio.play()
@@ -661,58 +592,43 @@
         })
         .catch((err) => {
           console.warn('[audio play failed]', src, err);
-          done();
+          resolve();
         });
     });
   }
 
-  function playAudioSequence(fileList = []) {
-    if (!Array.isArray(fileList) || fileList.length === 0) return;
-
-    stopAudioPlayback();
-
+    async function playAudioSequence(fileList = []) {
     const token = ++activeSequenceToken;
-    console.log('[play sequence start]', fileList, { token });
+    console.log('[play sequence start]', fileList);
 
-    (async () => {
-      for (const src of fileList) {
+    for (const src of fileList) {
         if (token !== activeSequenceToken) {
-          console.log('[play sequence cancelled before]', src, { token, activeSequenceToken });
-          return;
+        console.log('[play sequence cancelled]', src);
+        return;
         }
 
         await playSingleAudio(src);
+    }
 
-        if (token !== activeSequenceToken) {
-          console.log('[play sequence cancelled after]', src, { token, activeSequenceToken });
-          return;
-        }
-
-        // Safari向けのワンクッション
-        await new Promise((r) => setTimeout(r, 60));
-      }
-
-      if (token === activeSequenceToken) {
+    if (token === activeSequenceToken) {
         activeAudio = null;
-        console.log('[play sequence end]', { token });
-      }
-    })().catch((err) => {
-      console.warn('[play sequence failed]', err);
-    });
+        console.log('[play sequence end]');
+    }
   }
 
   const se = {
-    timeSignal: getCachedAudio('audio/timeSignal.mp3'),
+    timeSignal: 'audio/timeSignal.mp3',
   };
 
   function playTimeSignal() {
     try {
-      activeSeAudio = se.timeSignal;
-      activeSeAudio.pause();
-      activeSeAudio.currentTime = 0;
-      activeSeAudio.muted = false;
-      activeSeAudio.volume = audioConfig.seVolume;
-      activeSeAudio.play();
+      const audio = getAudio(se.timeSignal);
+      activeSeAudio = audio;
+
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = audioConfig.seVolume;
+      audio.play();
     } catch (e) {
       console.warn('[playTimeSignal] error', e);
     }
@@ -722,12 +638,12 @@
     try {
       stopAudioPlayback();
 
-      activeAudio = getCachedAudio('audio/setvoice.wav');
-      activeAudio.pause();
-      activeAudio.currentTime = 0;
-      activeAudio.muted = false;
-      activeAudio.volume = audioConfig.voiceVolume;
-      activeAudio.play();
+      const audio = getAudio('audio/setvoice.wav');
+      activeAudio = audio;
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = audioConfig.voiceVolume;
+      audio.play();
     } catch (e) {
       console.warn('[playVoiceTestSound] error', e);
     }
@@ -737,12 +653,12 @@
     try {
       stopSePlayback();
 
-      activeSeAudio = getCachedAudio('audio/timeSignal.mp3');
-      activeSeAudio.pause();
-      activeSeAudio.currentTime = 0;
-      activeSeAudio.muted = false;
-      activeSeAudio.volume = audioConfig.seVolume;
-      activeSeAudio.play();
+      const audio = getAudio('audio/timeSignal.mp3');
+      activeSeAudio = audio;
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = audioConfig.seVolume;
+      audio.play();
     } catch (e) {
       console.warn('[playSeTestSound] error', e);
     }
@@ -1167,8 +1083,6 @@
     const mode = getModeConfig(modeKey);
     if (!mode) return;
 
-    preloadModeVoices(modeKey);
-
     clearNextAnnounceTimeout();
     clearTimerLoop();
     stopSpeech();
@@ -1328,166 +1242,146 @@
    - saveSettings: 設定記憶
 ======================================== */
 
-function bindEvents() {
-  dom.btnCircle?.addEventListener('click', async () => {
-    unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
-    });
-    updateButtonState('circle');
-    startMode('circle', 0);
-  });
+  function bindEvents() {
+    const unlockOnce = async () => {
+      await unlockAudio();
 
-  dom.btnCircle1?.addEventListener('click', async () => {
-    unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
-    });
-    updateButtonState('circle1');
-    startMode('circle', 1);
-  });
+      if (audioUnlocked) {
+        window.removeEventListener('pointerdown', unlockOnce);
+        window.removeEventListener('touchstart', unlockOnce);
+        window.removeEventListener('click', unlockOnce);
+      }
+    };
 
-  dom.btnCircle2?.addEventListener('click', async () => {
-    unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
-    });
-    updateButtonState('circle2');
-    startMode('circle', 2);
-  });
+    window.addEventListener('pointerdown', unlockOnce, { passive: true });
+    window.addEventListener('touchstart', unlockOnce, { passive: true });
+    window.addEventListener('click', unlockOnce, { passive: true });
 
-  dom.btnGrand?.addEventListener('click', async () => {
-    unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
+    dom.btnCircle?.addEventListener('click', async () => {
+      await unlockAudio();
+      updateButtonState('circle');
+      startMode('circle', 0);
     });
-    updateButtonState('grand');
-    startMode('grand', 0);
-  });
 
-  dom.btnGrand1?.addEventListener('click', async () => {
-    unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
+    dom.btnCircle1?.addEventListener('click', async () => {
+      await unlockAudio();
+      updateButtonState('circle1');
+      startMode('circle', 1);
     });
-    updateButtonState('grand1');
-    startMode('grand', 1);
-  });
 
-  dom.btnGrand2?.addEventListener('click', async () => {
-    unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
+    dom.btnCircle2?.addEventListener('click', async () => {
+      await unlockAudio();
+      updateButtonState('circle2');
+      startMode('circle', 2);
     });
-    updateButtonState('grand2');
-    startMode('grand', 2);
-  });
 
-  dom.btnAdjustPlus?.addEventListener('click', async () => {
-    unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
+    dom.btnGrand?.addEventListener('click', async () => {
+      await unlockAudio();
+      updateButtonState('grand');
+      startMode('grand', 0);
     });
-    adjustTargetTime(CONFIG.adjustStepMs);
-  });
 
-  dom.btnAdjustMinus?.addEventListener('click', async () => {
-    unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
+    dom.btnGrand1?.addEventListener('click', async () => {
+      await unlockAudio();
+      updateButtonState('grand1');
+      startMode('grand', 1);
     });
-    adjustTargetTime(-CONFIG.adjustStepMs);
-  });
+    
+    dom.btnGrand2?.addEventListener('click', async () => {
+      await unlockAudio();
+      updateButtonState('grand2');
+      startMode('grand', 2);
+    });
 
-  dom.btnReset?.addEventListener('click', async () => {
-    unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
+    dom.btnAdjustPlus?.addEventListener('click', () => {
+      adjustTargetTime(CONFIG.adjustStepMs);
     });
-    updateButtonState('initial');
-    resetTimer();
-  });
 
-  document.querySelectorAll('input[name="announceLead"]').forEach((el) => {
-    el.addEventListener('change', async () => {
-      unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
+    dom.btnAdjustMinus?.addEventListener('click', () => {
+      adjustTargetTime(-CONFIG.adjustStepMs);
     });
+
+    dom.btnReset?.addEventListener('click', () => {
+      updateButtonState('initial');
+      resetTimer();
+    });
+
+    document.querySelectorAll('input[name="announceLead"]').forEach((el) => {
+      el.addEventListener('change', () => {
+        saveSettings();
+      });
+    });
+
+    document.querySelectorAll('input[name="playNextVoice"]').forEach((el) => {
+      el.addEventListener('change', () => {
+        saveSettings();
+      });
+    });
+
+    dom.seVolume?.addEventListener('input', (e) => {
+      audioConfig.seVolume = e.target.value / 100;
+      playSeTestSound();
       saveSettings();
     });
-  });
 
-  document.querySelectorAll('input[name="playNextVoice"]').forEach((el) => {
-    el.addEventListener('change', async () => {
-      unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
-    });
+    dom.voiceVolume?.addEventListener('input', (e) => {
+      audioConfig.voiceVolume = e.target.value / 100;
+      playVoiceTestSound();
       saveSettings();
     });
-  });
 
-  dom.seVolume?.addEventListener('input', async (e) => {
-    unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
+    document.querySelectorAll('input[name="voiceMode"]').forEach((el) => {
+      el.addEventListener('change', () => {
+        saveSettings();
+      });
     });
-    audioConfig.seVolume = e.target.value / 100;
-    playSeTestSound();
-    saveSettings();
-  });
 
-  dom.voiceVolume?.addEventListener('input', async (e) => {
-    unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
+
+
+    window.addEventListener('keydown', (event) => {
+      if (event.repeat) return;
+
+      switch (event.key) {
+        case 'F1':
+          updateButtonState('circle');
+          startMode('circle', 0);
+          break;
+        case 'F2':
+          updateButtonState('circle1');
+          startMode('circle', 1);
+          break;
+        case 'F3':
+          updateButtonState('circle2');
+          startMode('circle', 2);
+          break;
+        case 'F5':
+          updateButtonState('grand');
+          startMode('grand', 0);
+          break;
+        case 'F6':
+          updateButtonState('grand1');
+          startMode('grand', 1);
+          break;
+        case 'F7':
+          updateButtonState('grand2');
+          startMode('grand', 2);
+          break;
+        case '+':
+        case '=':
+          adjustTargetTime(CONFIG.adjustStepMs);
+          break;
+        case '-':
+          adjustTargetTime(-CONFIG.adjustStepMs);
+          break;
+        case 'Delete':
+          updateButtonState('initial');
+          resetTimer();
+          break;
+        default:
+          break;
+      }
     });
-    audioConfig.voiceVolume = e.target.value / 100;
-    playVoiceTestSound();
-    saveSettings();
-  });
-
-  document.querySelectorAll('input[name="voiceMode"]').forEach((el) => {
-    el.addEventListener('change', async () => {
-      unlockAudio().catch((err) => {
-      console.warn('[unlockAudio] failed', err);
-    });
-      saveSettings();
-    });
-  });
-
-  window.addEventListener('keydown', (event) => {
-    if (event.repeat) return;
-
-    switch (event.key) {
-      case 'F1':
-        updateButtonState('circle');
-        startMode('circle', 0);
-        break;
-      case 'F2':
-        updateButtonState('circle1');
-        startMode('circle', 1);
-        break;
-      case 'F3':
-        updateButtonState('circle2');
-        startMode('circle', 2);
-        break;
-      case 'F5':
-        updateButtonState('grand');
-        startMode('grand', 0);
-        break;
-      case 'F6':
-        updateButtonState('grand1');
-        startMode('grand', 1);
-        break;
-      case 'F7':
-        updateButtonState('grand2');
-        startMode('grand', 2);
-        break;
-      case '+':
-      case '=':
-        adjustTargetTime(CONFIG.adjustStepMs);
-        break;
-      case '-':
-        adjustTargetTime(-CONFIG.adjustStepMs);
-        break;
-      case 'Delete':
-        updateButtonState('initial');
-        resetTimer();
-        break;
-      default:
-        break;
-    }
-  });
-}
+  }
 
   /* ========================================
      9. 初期化
@@ -1510,10 +1404,6 @@ function bindEvents() {
       dom.seVolume,
       document.getElementById('seVolumeValue')
     );
-
-    collectVoiceSources().forEach((src) => {
-      getCachedAudio(src);
-    });
 
     console.log('[init] complete', {
       voiceMode: getVoiceMode(),
