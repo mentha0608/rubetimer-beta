@@ -1,6 +1,6 @@
 // Rubetimer
-// Version: v2.21
-// Build: 2026-04-02
+// Version: v2.30
+// Build: 2026-04-08
 // Author: mentha0608
 // Voice: VOICEVOX:四国めたん
 //
@@ -8,16 +8,17 @@
 // ・高精度タイマー（performance.now + requestAnimationFrame）
 // ・ラップ時間は0.25秒単位で丸めて利用
 // ・床出現タイミング基準で案内
+// ・Howler.js による音声再生基盤へ移行
 
 (() => {
   'use strict';
 
-    /* ========================================
+/* ========================================
    1. 定数 / データ
-   - CONFIG: 予告7秒前、爆発後の次のディレイ 等
-   - STORAGE_KEYS
+   - CONFIG: タイマー基本設定
+   - STORAGE_KEYS: 保存キー
    - audioConfig: 音量設定
-   - VOICE_PARTS: 読み上げ用
+   - VOICE_PARTS: 音声パーツ定義
    - MODES: ルベランギス床パターン
 ======================================== */
 
@@ -291,9 +292,12 @@
     playNextVoiceRadios: document.querySelectorAll('input[name="playNextVoice"]'),
   };
 
-  /* ========================================
-     3. 状態
-  ======================================== */
+/* ========================================
+   3. 状態
+   - タイマー進行状態
+   - 案内発火フラグ
+   - 次案内タイマー管理
+======================================== */
 
   const state = {
     mode: null,
@@ -309,76 +313,61 @@
 
 /* ========================================
    4. 音声ユーティリティ
-   - buildKana: （シンプル）読み上げ用組み合わせ
-   - resolveLeadKana / resolveNextKana
+   - howlPool / getHowl: Howler音源の生成と再利用
+   - primeHowler: 初回ユーザー操作で再生基盤を初期化
+   - buildKana / resolveLeadKana / resolveNextKana
    - getVoiceMode / seekVoiceVolume
    - stopSpeech / stopAudioPlayback / stopSePlayback
    - speakKana
    - buildAudioFiles
    - resolveLeadFiles / resolveNextFiles
-   - playSingleAudio / playAudioSequence 
-   - playVoiceTestSound / playSeTestSound
+   - playSingleHowl / playHowlSequence
+   - playTimeSignal / playVoiceTestSound / playSeTestSound
    - voice
-  ======================================== */
+======================================== */
 
-  let activeAudio = null;
-  let activeSeAudio = null;
+  let activeVoiceHowl = null;
+  let activeSeHowl = null;
   let activeSequenceToken = 0;
-  const audioPool = new Map();
-  let audioUnlocked = false;
-  let audioUnlocking = false;
+  const howlPool = new Map();
+  let howlerPrimed = false;
 
-  function getAudio(src) {
-    if (!audioPool.has(src)) {
-      const audio = new Audio(src);
-      audio.preload = 'auto';
-      audio.playsInline = true;
-      audio.setAttribute?.('playsinline', '');
-      audio.setAttribute?.('webkit-playsinline', '');
-      audioPool.set(src, audio);
+  function getHowl(src, options = {}) {
+    if (!howlPool.has(src)) {
+      const sound = new Howl({
+        src: [src],
+        preload: true,
+        html5: options.html5 ?? false,
+        volume: options.volume ?? 1.0,
+      });
+
+      howlPool.set(src, sound);
     }
 
-    return audioPool.get(src);
+    return howlPool.get(src);
   }
 
-  async function unlockAudio() {
-    if (audioUnlocked || audioUnlocking) return;
+  async function primeHowler() {
+    if (howlerPrimed) return;
 
-    audioUnlocking = true;
-
-    const sources = collectVoiceSources();
+    const src = 'audio/timeSignal.mp3';
+    const sound = getHowl(src);
 
     try {
-      for (const src of sources) {
-        const audio = getAudio(src);
+      const id = sound.play();
 
-        const prevMuted = audio.muted;
-        const prevVolume = audio.volume;
+      sound.volume(0, id);
 
-        audio.muted = true;
-        audio.volume = 0;
+      await new Promise((resolve) => {
+        sound.once('play', resolve, id);
+        sound.once('playerror', resolve, id);
+      });
 
-        try {
-          await audio.play();
-        } catch (err) {
-          console.warn('[unlockAudio] play failed', src, err);
-        }
-
-        try {
-          audio.pause();
-          audio.currentTime = 0;
-        } catch (err) {
-          console.warn('[unlockAudio] reset failed', src, err);
-        }
-
-        audio.muted = prevMuted;
-        audio.volume = prevVolume;
-      }
-
-      audioUnlocked = true;
-      console.log('[unlockAudio] complete', sources);
-    } finally {
-      audioUnlocking = false;
+      sound.stop(id);
+      howlerPrimed = true;
+      console.log('[primeHowler] complete');
+    } catch (err) {
+      console.warn('[primeHowler] failed', err);
     }
   }
 
@@ -441,38 +430,32 @@
 
   function stopAudioPlayback() {
     console.log('[stopAudioPlayback] called');
-
-    // 再生中のシーケンスを無効化
     activeSequenceToken += 1;
 
-    // 再生中の音声を止める
-    if (activeAudio) {
-        try {
-          activeAudio.pause();
-          activeAudio.currentTime = 0;
-        } catch (e) {
-          console.warn('[stopAudioPlayback] error while stopping audio', e);
-        }
+    if (activeVoiceHowl) {
+      try {
+        activeVoiceHowl.stop();
+      } catch (e) {
+        console.warn('[stopAudioPlayback] error', e);
+      }
 
-        activeAudio = null;
+      activeVoiceHowl = null;
     }
   }
 
   function stopSePlayback() {
-  console.log('[stopSePlayback] called');
+    console.log('[stopSePlayback] called');
 
-  if (activeSeAudio) {
-    try {
-      activeSeAudio.pause();
-      activeSeAudio.currentTime = 0;
-    } catch (e) {
-      console.warn('[stopSePlayback] error', e);
+    if (activeSeHowl) {
+      try {
+        activeSeHowl.stop();
+      } catch (e) {
+        console.warn('[stopSePlayback] error', e);
+      }
+
+      activeSeHowl = null;
     }
-
-    activeSeAudio = null;
   }
-}
-
 
   function speakKana(text) {
     if (!text) return;
@@ -532,19 +515,6 @@
       .filter(Boolean);
   }
 
-  function collectVoiceSources() {
-    const voiceSources = Object.values(VOICE_PARTS)
-      .map((part) => part?.file)
-      .filter(Boolean)
-      .map((file) => `audio/${file}.wav`);
-
-    return [
-      'audio/timeSignal.mp3',
-      'audio/setvoice.wav',
-      ...voiceSources,
-    ];
-  }
-
   function resolveLeadFiles(arg1) {
     if (arg1 && typeof arg1 === 'object' && !Array.isArray(arg1)) {
       if (Array.isArray(arg1.leadParts)) {
@@ -563,56 +533,49 @@
     return [];
   }
 
-  function playSingleAudio(src) {
+  function playSingleHowl(src, volume = 1.0) {
     return new Promise((resolve) => {
-      const audio = getAudio(src);
-      activeAudio = audio;
+      const sound = getHowl(src, { volume });
+      activeVoiceHowl = sound;
 
-      try {
-        audio.pause();
-        audio.currentTime = 0;
-      } catch (e) {
-        console.warn('[playSingleAudio] reset error', src, e);
-      }
+      const id = sound.play();
 
-      audio.volume = seekVoiceVolume();
+      sound.volume(volume, id);
 
-      audio.onended = () => {
+      sound.once('end', () => {
         resolve();
-      };
+      }, id);
 
-      audio.onerror = (event) => {
-        console.warn('[audio error]', src, event);
-        resolve();
-      };
-
-      audio.play()
-        .then(() => {
-          console.log('[audio play]', src);
-        })
-        .catch((err) => {
-          console.warn('[audio play failed]', src, err);
-          resolve();
+      sound.once('playerror', () => {
+        sound.once('unlock', () => {
+          sound.play();
         });
+        resolve();
+      }, id);
+
+      sound.once('loaderror', (_, err) => {
+        console.warn('[howl loaderror]', src, err);
+        resolve();
+      }, id);
     });
   }
 
-    async function playAudioSequence(fileList = []) {
+  async function playHowlSequence(fileList = []) {
     const token = ++activeSequenceToken;
     console.log('[play sequence start]', fileList);
 
     for (const src of fileList) {
-        if (token !== activeSequenceToken) {
+      if (token !== activeSequenceToken) {
         console.log('[play sequence cancelled]', src);
         return;
-        }
+      }
 
-        await playSingleAudio(src);
+      await playSingleHowl(src, seekVoiceVolume());
     }
 
     if (token === activeSequenceToken) {
-        activeAudio = null;
-        console.log('[play sequence end]');
+      activeVoiceHowl = null;
+      console.log('[play sequence end]');
     }
   }
 
@@ -622,13 +585,11 @@
 
   function playTimeSignal() {
     try {
-      const audio = getAudio(se.timeSignal);
-      activeSeAudio = audio;
+      const sound = getHowl(se.timeSignal, { volume: audioConfig.seVolume });
+      activeSeHowl = sound;
 
-      audio.pause();
-      audio.currentTime = 0;
-      audio.volume = audioConfig.seVolume;
-      audio.play();
+      const id = sound.play();
+      sound.volume(audioConfig.seVolume, id);
     } catch (e) {
       console.warn('[playTimeSignal] error', e);
     }
@@ -638,12 +599,11 @@
     try {
       stopAudioPlayback();
 
-      const audio = getAudio('audio/setvoice.wav');
-      activeAudio = audio;
-      audio.pause();
-      audio.currentTime = 0;
-      audio.volume = audioConfig.voiceVolume;
-      audio.play();
+      const sound = getHowl('audio/setvoice.wav', { volume: audioConfig.voiceVolume });
+      activeVoiceHowl = sound;
+
+      const id = sound.play();
+      sound.volume(audioConfig.voiceVolume, id);
     } catch (e) {
       console.warn('[playVoiceTestSound] error', e);
     }
@@ -653,12 +613,11 @@
     try {
       stopSePlayback();
 
-      const audio = getAudio('audio/timeSignal.mp3');
-      activeSeAudio = audio;
-      audio.pause();
-      audio.currentTime = 0;
-      audio.volume = audioConfig.seVolume;
-      audio.play();
+      const sound = getHowl('audio/timeSignal.mp3', { volume: audioConfig.seVolume });
+      activeSeHowl = sound;
+
+      const id = sound.play();
+      sound.volume(audioConfig.seVolume, id);
     } catch (e) {
       console.warn('[playSeTestSound] error', e);
     }
@@ -676,7 +635,7 @@
 
       const files = resolveLeadFiles(arg1);
       console.log('[lead files]', files);
-      playAudioSequence(files);
+      playHowlSequence(files);
     },
 
     countdown(sec) {
@@ -695,7 +654,7 @@
 
       const files = resolveNextFiles(arg1);
       console.log('[next files]', files);
-      playAudioSequence(files);
+      playHowlSequence(files);
     },
   };
 
@@ -805,17 +764,10 @@
 
 /* ========================================
    6. 汎用
-   - nowPerfMs: 超精度時計採用
-   - getLeadSeconds
-   - shouldPlayNextVoice
-   - clearNextAnnounceTimeout
-   - clearTimerLoop
-   - getModeConfig
-   - getPhaseInfo
-   - getDurationMs
-   - pushHistory
-   - resetAnnouncementFlags
-   - bindVolumeDisplay
+   - 時刻取得
+   - 設定参照
+   - タイマー補助
+   - 表示補助
 ======================================== */
 
   function nowPerfMs() {
@@ -1071,13 +1023,13 @@
     }
   }
 
-  /* ========================================
+/* ========================================
    9. タイマー
    - startMode: タイマー開始
    - goToNextPhase: フェーズ進行
-   - tick: 残り時間描写
+   - tick: 残り時間更新と案内判定
    - resetTimer: タイマー停止と初期化
-  ======================================== */
+======================================== */
 
   function startMode(modeKey, scrambleState = 0) {
     const mode = getModeConfig(modeKey);
@@ -1237,16 +1189,18 @@
 
 /* ========================================
    10. イベント
-   - bindEvents: ボタンと押し忘れボタンのモード
-   - ボタンイベント
-   - saveSettings: 設定記憶
+   - bindEvents: 初回音声アンロックと各種操作の登録
+   - 開始ボタンイベント
+   - 調整ボタンイベント
+   - 設定変更イベント
+   - キーボードイベント
 ======================================== */
 
   function bindEvents() {
     const unlockOnce = async () => {
-      await unlockAudio();
+      await primeHowler();
 
-      if (audioUnlocked) {
+      if (howlerPrimed) {
         window.removeEventListener('pointerdown', unlockOnce);
         window.removeEventListener('touchstart', unlockOnce);
         window.removeEventListener('click', unlockOnce);
@@ -1258,37 +1212,37 @@
     window.addEventListener('click', unlockOnce, { passive: true });
 
     dom.btnCircle?.addEventListener('click', async () => {
-      await unlockAudio();
+      await primeHowler();
       updateButtonState('circle');
       startMode('circle', 0);
     });
 
     dom.btnCircle1?.addEventListener('click', async () => {
-      await unlockAudio();
+      await primeHowler();
       updateButtonState('circle1');
       startMode('circle', 1);
     });
 
     dom.btnCircle2?.addEventListener('click', async () => {
-      await unlockAudio();
+      await primeHowler();
       updateButtonState('circle2');
       startMode('circle', 2);
     });
 
     dom.btnGrand?.addEventListener('click', async () => {
-      await unlockAudio();
+      await primeHowler();
       updateButtonState('grand');
       startMode('grand', 0);
     });
 
     dom.btnGrand1?.addEventListener('click', async () => {
-      await unlockAudio();
+      await primeHowler();
       updateButtonState('grand1');
       startMode('grand', 1);
     });
-    
+
     dom.btnGrand2?.addEventListener('click', async () => {
-      await unlockAudio();
+      await primeHowler();
       updateButtonState('grand2');
       startMode('grand', 2);
     });
@@ -1384,7 +1338,7 @@
   }
 
   /* ========================================
-     9. 初期化
+     11. 初期化
   ======================================== */
 
   function init() {

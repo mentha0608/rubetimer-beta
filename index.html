@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rubetimer v2.22</title>
+  <title>Rubetimer v2.30</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -157,6 +157,12 @@
         <section class="note-block">
             <h2 class="note-title">更新履歴</h2>
             <div class="note-content">
+            <p><strong>v2.30</strong> - Howler.js による音声再生基盤へ移行</p>
+            <p>　　　- Safari / iPhone 向けの音声再生安定化を目的に再生処理を刷新</p>
+            <p>　　　- Audio の自前管理から Howler 音源管理へ変更</p>
+            <p>　　　- 初回ユーザー操作で Howler の再生基盤を初期化する処理を追加</p>
+            <p>　　　- VOICE / SE / テスト再生を Howler ベースへ統一</p>
+
             <p><strong>v2.22</strong> - Safari / iPhone 向けに音声再生処理を改善</p>
             <p>　　　- Audio の事前生成・再利用に対応</p>
             <p>　　　- 初回ユーザー操作で音声アンロック処理を追加</p>
@@ -193,11 +199,11 @@
          フッター
     ======================================== -->
     <div class="footer-note">
-      Rubetimer v2.22｜ローカル設定保存版<br>
+      Rubetimer v2.30｜ローカル設定保存版<br>
     </div>
 
   </main>
-
+  <script src="howler.min.js"></script>
   <script src="timer.js"></script>
 </body>
 </html>
