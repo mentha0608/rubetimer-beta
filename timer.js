@@ -1,5 +1,5 @@
 // Rubetimer
-// Version: v2.30
+// Version: v2.31
 // Build: 2026-04-08
 // Author: mentha0608
 // Voice: VOICEVOX:四国めたん
@@ -9,6 +9,7 @@
 // ・ラップ時間は0.25秒単位で丸めて利用
 // ・床出現タイミング基準で案内
 // ・Howler.js による音声再生基盤へ移行
+// ・外部割当キー（[ ] + -）による操作へ整理
 
 (() => {
   'use strict';
@@ -35,6 +36,7 @@
     voiceVolume: 'rubetimer.voiceVolume',
     announceLead: 'rubetimer.announceLead',
     playNextVoice: 'rubetimer.playNextVoice',
+    metronomeInterval: 'rubetimer.metronomeInterval',
   };
 
   const audioConfig = {
@@ -58,6 +60,11 @@
         text: '遅い',
         kana: 'おそい',
         file: 's_osoi',
+    },
+    s_5sec: {
+        text: '5秒前',
+        kana: 'ごびょうまえ',
+        file: 's_5sec',
     },
 
     // ===== サークル =====
@@ -290,6 +297,7 @@
     seVolume: document.getElementById('seVolume'),
     voiceVolume: document.getElementById('voiceVolume'),
     playNextVoiceRadios: document.querySelectorAll('input[name="playNextVoice"]'),
+    metronomeIntervalRadios: document.querySelectorAll('input[name="metronomeInterval"]'),
   };
 
 /* ========================================
@@ -309,6 +317,9 @@
     leadFired: false,
     countdown3Fired: false,
     nextAnnounceTimeoutId: 0,
+
+    lastMetronomeTenths: null,
+    fiveSecondsVoiceFired: false,
   };
 
 /* ========================================
@@ -581,6 +592,9 @@
 
   const se = {
     timeSignal: 'audio/timeSignal.mp3',
+
+    metronomeBeep: 'audio/metronomeBeep.mp3',
+    metronomeChime: 'audio/metronomeChime.mp3',
   };
 
   function playTimeSignal() {
@@ -592,6 +606,30 @@
       sound.volume(audioConfig.seVolume, id);
     } catch (e) {
       console.warn('[playTimeSignal] error', e);
+    }
+  }
+
+  function playMetronomeBeep() {
+  try {
+    const sound = getHowl(se.metronomeBeep, { volume: audioConfig.seVolume * 0.45 });
+    activeSeHowl = sound;
+
+    const id = sound.play();
+    sound.volume(audioConfig.seVolume * 0.45, id);
+  } catch (e) {
+    console.warn('[playMetronomeBeep] error', e);
+  }
+}
+
+  function playMetronomeChime() {
+    try {
+      const sound = getHowl(se.metronomeChime, { volume: audioConfig.seVolume * 0.65 });
+      activeSeHowl = sound;
+
+      const id = sound.play();
+      sound.volume(audioConfig.seVolume * 0.65, id);
+    } catch (e) {
+      console.warn('[playMetronomeChime] error', e);
     }
   }
 
@@ -676,9 +714,13 @@
     const playNextVoiceValue =
       document.querySelector('input[name="playNextVoice"]:checked')?.value ?? 'on';
 
+    const metronomeIntervalValue =
+       document.querySelector('input[name="metronomeInterval"]:checked')?.value ?? 'off';
+
     localStorage.setItem(STORAGE_KEYS.voiceMode, voiceMode);
     localStorage.setItem(STORAGE_KEYS.announceLead, announceLeadValue);
     localStorage.setItem(STORAGE_KEYS.playNextVoice, playNextVoiceValue);
+    localStorage.setItem(STORAGE_KEYS.metronomeInterval, metronomeIntervalValue);
 
     if (seVolumeEl) {
       localStorage.setItem(STORAGE_KEYS.seVolume, seVolumeEl.value);
@@ -694,6 +736,7 @@
     voiceVolume: dom.voiceVolume?.value,
     announceLead: announceLeadValue,
     playNextVoice: playNextVoiceValue,
+    metronomeInterval: metronomeIntervalValue,
   });
   }
 
@@ -703,6 +746,7 @@
     const savedVoiceVolume = localStorage.getItem(STORAGE_KEYS.voiceVolume);
     const savedAnnounceLead = localStorage.getItem(STORAGE_KEYS.announceLead);
     const savedPlayNextVoice = localStorage.getItem(STORAGE_KEYS.playNextVoice);
+    const savedMetronomeInterval = localStorage.getItem(STORAGE_KEYS.metronomeInterval);
 
     if (savedVoiceMode) {
       const radio = document.querySelector(`input[name="voiceMode"][value="${savedVoiceMode}"]`);
@@ -735,12 +779,20 @@
       }
     }
 
+    if (savedMetronomeInterval) {
+      const radio = document.querySelector(`input[name="metronomeInterval"][value="${savedMetronomeInterval}"]`);
+      if (radio) {
+        radio.checked = true;
+      }
+    }
+
     console.log('[settings load]', {
       voiceMode: getVoiceMode(),
       seVolume: dom.seVolume?.value,
       voiceVolume: dom.voiceVolume?.value,
       announceLead: document.querySelector('input[name="announceLead"]:checked')?.value,
       playNextVoice: document.querySelector('input[name="playNextVoice"]:checked')?.value,
+      metronomeInterval: document.querySelector('input[name="metronomeInterval"]:checked')?.value,
     });
   }
 
@@ -785,6 +837,18 @@
   function shouldPlayNextVoice() {
     const checked = document.querySelector('input[name="playNextVoice"]:checked');
     return checked?.value !== 'off';
+  }
+
+  function getMetronomeInterval() {
+    const checked = document.querySelector('input[name="metronomeInterval"]:checked');
+    const raw = checked?.value ?? 'off';
+
+    if (raw === 'off') return 0;
+
+    const value = Number(raw);
+    if (Number.isNaN(value) || value <= 0) return 0;
+
+    return value;
   }
 
   function clearNextAnnounceTimeout() {
@@ -846,6 +910,9 @@
   function resetAnnouncementFlags() {
     state.leadFired = false;
     state.countdown3Fired = false;
+
+    state.lastMetronomeTenths = null;
+    state.fiveSecondsVoiceFired = false;
   }
 
   function bindVolumeDisplay(rangeEl, valueEl) {
@@ -866,7 +933,7 @@
    - updateButtonState: ボタン描画
    - BUTTON_STATE_TABLE: ボタンの考え方反映
    - adjustTargetTime 系
-======================================== */
+  ======================================== */
 
   function updateButtonState(stateKey) {
     const table = BUTTON_STATE_TABLE[stateKey];
@@ -1101,16 +1168,40 @@
   );
 
   const phase = getPhaseInfo(state.mode, state.scrambleState);
-  renderRunning(durationMs, phase);
+    renderRunning(durationMs, phase);
 
-  console.log('[goToNextPhase]', {
-    scrambleState: state.scrambleState,
-    lapIndex: state.lapIndex,
-    durationMs,
-  });
+    console.log('[goToNextPhase]', {
+      scrambleState: state.scrambleState,
+      lapIndex: state.lapIndex,
+      durationMs,
+    });
 
-  state.rafId = requestAnimationFrame(tick);
-}
+    state.rafId = requestAnimationFrame(tick);
+  }
+
+  function handleMetronome(remainingMs) {
+    if (remainingMs <= 0) return;
+    const intervalSec = getMetronomeInterval();
+    if (intervalSec <= 0) return;
+
+    const safeMs = Math.max(0, remainingMs);
+    const currentTenths = Math.floor(safeMs / 100);
+
+    if (state.lastMetronomeTenths === currentTenths) return;
+    state.lastMetronomeTenths = currentTenths;
+
+    // x.0 の瞬間だけ判定
+    if (currentTenths % 10 !== 0) return;
+
+    const wholeSeconds = currentTenths / 10;
+
+    if (wholeSeconds % intervalSec !== 0) {
+      playMetronomeBeep();
+      return;
+    }
+
+    playMetronomeChime();
+  }
 
   function tick() {
     clearTimerLoop();
@@ -1121,6 +1212,9 @@
     const current = getPhaseInfo(state.mode, state.scrambleState);
 
     renderRunning(remainingMs, current);
+
+    // 追加：メトロノーム
+    handleMetronome(remainingMs);
 
     // 事前読み
     const leadMs = getLeadSeconds() * 1000;
@@ -1193,7 +1287,7 @@
    - 開始ボタンイベント
    - 調整ボタンイベント
    - 設定変更イベント
-   - キーボードイベント
+   - キーボード / 外部割当キーイベント
 ======================================== */
 
   function bindEvents() {
@@ -1272,6 +1366,12 @@
       });
     });
 
+    document.querySelectorAll('input[name="metronomeInterval"]').forEach((el) => {
+      el.addEventListener('change', () => {
+        saveSettings();
+      });
+    });
+
     dom.seVolume?.addEventListener('input', (e) => {
       audioConfig.seVolume = e.target.value / 100;
       playSeTestSound();
@@ -1296,41 +1396,30 @@
       if (event.repeat) return;
 
       switch (event.key) {
-        case 'F1':
+        // 新キー
+        case '[':
           updateButtonState('circle');
           startMode('circle', 0);
           break;
-        case 'F2':
-          updateButtonState('circle1');
-          startMode('circle', 1);
-          break;
-        case 'F3':
-          updateButtonState('circle2');
-          startMode('circle', 2);
-          break;
-        case 'F5':
+        case ']':
           updateButtonState('grand');
           startMode('grand', 0);
           break;
-        case 'F6':
-          updateButtonState('grand1');
-          startMode('grand', 1);
-          break;
-        case 'F7':
-          updateButtonState('grand2');
-          startMode('grand', 2);
-          break;
+
         case '+':
         case '=':
           adjustTargetTime(CONFIG.adjustStepMs);
           break;
+
         case '-':
           adjustTargetTime(-CONFIG.adjustStepMs);
           break;
+
         case 'Delete':
           updateButtonState('initial');
           resetTimer();
           break;
+
         default:
           break;
       }

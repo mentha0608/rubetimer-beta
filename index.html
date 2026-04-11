@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rubetimer v2.30</title>
+  <title>Rubetimer v2.31</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -132,9 +132,29 @@
             <span>OFF</span>
             </label>
         </div>
+        <div class="setting-row">
+        <label>メトロノーム音</label>
+        <div class="toggle-group" role="radiogroup" aria-label="メトロノーム音">
+          <label class="toggle-chip">
+            <input type="radio" name="metronomeInterval" value="off" checked>
+            <span>OFF</span>
+          </label>
+          <label class="toggle-chip">
+            <input type="radio" name="metronomeInterval" value="10">
+            <span>10秒毎</span>
+          </label>
+          <label class="toggle-chip">
+            <input type="radio" name="metronomeInterval" value="5">
+            <span>5秒毎</span>
+          </label>
         </div>
+        <div class="setting-help">チン音を一定間隔で鳴らします。3秒以下では鳴りません。</div>
+      </div>
+    </div>
+        
     </details>
     </section>
+
     <!-- ========================================
      使い方・更新履歴
     ======================================== -->
@@ -157,6 +177,11 @@
         <section class="note-block">
             <h2 class="note-title">更新履歴</h2>
             <div class="note-content">
+            <p><strong>v2.31</strong> - 外部割当キーによる操作へ整理</p>
+            <p>　　　- キーボード割当運用に対応</p>
+            <p>　　　- 開始 / 補正キーを [ ] + - ベースへ整理</p>
+            <p>　　　- 旧Fキー依存を廃止</p>
+
             <p><strong>v2.30</strong> - Howler.js による音声再生基盤へ移行</p>
             <p>　　　- Safari / iPhone 向けの音声再生安定化を目的に再生処理を刷新</p>
             <p>　　　- Audio の自前管理から Howler 音源管理へ変更</p>
@@ -199,7 +224,7 @@
          フッター
     ======================================== -->
     <div class="footer-note">
-      Rubetimer v2.30｜ローカル設定保存版<br>
+      Rubetimer v2.31｜ローカル設定保存版<br>
     </div>
 
   </main>
