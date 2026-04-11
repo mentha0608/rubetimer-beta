@@ -694,6 +694,20 @@
       console.log('[next files]', files);
       playHowlSequence(files);
     },
+
+    fiveSeconds() {
+      const text = buildKana(['s_5sec']);
+      console.log('[fiveSeconds]', text);
+
+      if (getVoiceMode() === 'simple') {
+        speakKana(text);
+        return;
+      }
+
+      const files = buildAudioFiles(['s_5sec']);
+      console.log('[fiveSeconds files]', files);
+      playHowlSequence(files);
+    },
   };
 
 /* ========================================
@@ -926,6 +940,10 @@
 
     // 初期表示
     update();
+  }
+
+  function shouldPlayFiveSecondsVoice() {
+    return getLeadSeconds() === 10;
   }
 
   /* ========================================
@@ -1223,6 +1241,17 @@
         voice.lead(current);
       }
       state.leadFired = true;
+    }
+
+    // 5秒前読み上げ（10秒設定のときだけ）
+    if (
+      shouldPlayFiveSecondsVoice() &&
+      !state.fiveSecondsVoiceFired &&
+      remainingMs <= 5000 &&
+      remainingMs > 4000
+    ) {
+      voice.fiveSeconds();
+      state.fiveSecondsVoiceFired = true;
     }
 
     // 3秒前SE/カウント
