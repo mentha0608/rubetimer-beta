@@ -1,6 +1,5 @@
-// Rubetimer
-// Version: v2.31
-// Build: 2026-04-08
+// Version: v2.32
+// Build: 2026-04-21
 // Author: mentha0608
 // Voice: VOICEVOX:四国めたん
 //
@@ -89,6 +88,28 @@
         file: 'c_center_large_soto',
     },
 
+    // ===== サークル（安置案内版）=====
+    c_anchi_senjo_osoto: {
+        text: '線上・大外が安置です',
+        kana: 'せんじょう、おおそとがあんちです',
+        file: 'c_anchi_senjo_osoto',
+    },
+    c_anchi_center_large_senjo: {
+        text: '中央大・線上が安置です',
+        kana: 'ちゅうおう だい、せんじょうがあんちです',
+        file: 'c_anchi_center_large_senjo',
+    },
+    c_anchi_center_ami_soto: {
+        text: '中央・網・外が安置です',
+        kana: 'ちゅうおう、あみ、そとがあんちです',
+        file: 'c_anchi_center_ami_soto',
+    },
+    c_anchi_center_large_soto: {
+        text: '中央大・外が安置です',
+        kana: 'ちゅうおう だい、そとがあんちです',
+        file: 'c_anchi_center_large_soto',
+    },
+
     // ===== グランド =====
     g_niji: {
         text: '虹床です',
@@ -167,7 +188,7 @@
         nextParts: ['s_tsugi', 'c_center_large_soto'],
       },
       {
-        currentText: '中央・網・外',
+        currentText: '➅中央・網・外',
         noteText: '遅い',
 
         leadParts: ['s_osoi', 'c_center_ami_soto'],
@@ -402,11 +423,19 @@
     // 新形式: phaseオブジェクトを渡した場合
     if (arg1 && typeof arg1 === 'object' && !Array.isArray(arg1)) {
       if (Array.isArray(arg1.leadParts)) {
+        const voiceMode = getVoiceMode();
+
+        if (voiceMode === 'voicevox_anchi') {
+          return buildKana(convertLeadPartsForAnchiMode(arg1));
+        }
+
         return buildKana(arg1.leadParts);
       }
-    // 旧形式の名残がphase内にある場合の保険
+
+      // 旧形式の名残がphase内にある場合の保険
       return [arg1.leadText, arg1.leadExtraText].filter(Boolean).join(' ');
     }
+
     // 旧形式: 文字列2本
     return [arg1, arg2].filter(Boolean).join(' ');
   }
@@ -526,9 +555,35 @@
       .filter(Boolean);
   }
 
+  function convertLeadPartsForAnchiMode(phase) {
+    if (!phase || !Array.isArray(phase.leadParts)) return [];
+
+    return phase.leadParts.map((key) => {
+      switch (key) {
+        case 'c_senjo_osoto':
+          return 'c_anchi_senjo_osoto';
+        case 'c_center_large_senjo':
+          return 'c_anchi_center_large_senjo';
+        case 'c_center_ami_soto':
+          return 'c_anchi_center_ami_soto';
+        case 'c_center_large_soto':
+          return 'c_anchi_center_large_soto';
+        default:
+          return key;
+      }
+    });
+  }
+
   function resolveLeadFiles(arg1) {
     if (arg1 && typeof arg1 === 'object' && !Array.isArray(arg1)) {
       if (Array.isArray(arg1.leadParts)) {
+        const voiceMode = getVoiceMode();
+
+        // VOICEVOX（安置案内）時は、サークル系 lead だけ安置案内版へ差し替え
+        if (voiceMode === 'voicevox_anchi') {
+          return buildAudioFiles(convertLeadPartsForAnchiMode(arg1));
+        }
+
         return buildAudioFiles(arg1.leadParts);
       }
     }

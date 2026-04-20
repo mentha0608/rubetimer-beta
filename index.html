@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rubetimer v2.31</title>
+  <title>Rubetimer v2.32</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -69,70 +69,80 @@
       </button>
     </section>
  </section> <!-- main-ui の閉じ子--> 
-    <!-- ========================================
-         設定
-    ======================================== -->
-    <section class="panel settings-wrap" aria-label="設定">
-    <details class="settings-toggle">
-        <summary class="settings-summary">設定</summary>
+  <!-- ========================================
+        設定
+  ======================================== -->
+<section class="panel settings-wrap" aria-label="設定">
+  <details class="settings-toggle">
+    <summary class="settings-summary">設定</summary>
 
-        <div class="settings">
-        <div class="setting-row">
-            <label>音声モード</label>
-            <div class="voice-options">
-            <label><input type="radio" name="voiceMode" value="simple"> シンプル</label>
-            <label><input type="radio" name="voiceMode" value="voicevox" checked> VOICEVOX</label>
-            </div>
+    <div class="settings">
+      <div class="setting-row">
+        <label>音声モード</label>
+        <div class="voice-options">
+          <label>
+            <input type="radio" name="voiceMode" value="simple">
+            シンプル
+          </label>
+          <label>
+            <input type="radio" name="voiceMode" value="voicevox" checked>
+            VOICEVOX（標準）
+          </label>
+          <label>
+            <input type="radio" name="voiceMode" value="voicevox_anchi">
+            VOICEVOX（安置案内）
+          </label>
         </div>
+      </div>
 
-        <div class="setting-item">
-            <label for="voiceVolume">
-                VOICE音量〈<span id="voiceVolumeValue">85</span>〉
-            </label>
-
-            <div class="range-wrap">
-                <input id="voiceVolume" type="range" min="0" max="100" value="85">
-            </div>
+      <div class="setting-item">
+        <label for="voiceVolume">
+          VOICE音量〈<span id="voiceVolumeValue">85</span>〉
+        </label>
+        <div class="range-wrap">
+          <input id="voiceVolume" type="range" min="0" max="100" value="85">
         </div>
+      </div>
 
-        <div class="setting-item">
-            <label for="seVolume">
-                SE音量〈<span id="seVolumeValue">70</span>〉
-            </label>
-
-            <div class="range-wrap">
-                <input id="seVolume" type="range" min="0" max="100" value="70">
-            </div>
+      <div class="setting-item">
+        <label for="seVolume">
+          SE音量〈<span id="seVolumeValue">70</span>〉
+        </label>
+        <div class="range-wrap">
+          <input id="seVolume" type="range" min="0" max="100" value="70">
         </div>
+      </div>
 
-        <div class="setting-row">
+      <div class="setting-row">
         <label>事前読み上げ秒数</label>
         <div class="toggle-group" role="radiogroup" aria-label="事前読み上げ秒数">
-            <label class="toggle-chip">
+          <label class="toggle-chip">
             <input type="radio" name="announceLead" value="7" checked>
             <span>7秒</span>
-            </label>
-            <label class="toggle-chip">
+          </label>
+          <label class="toggle-chip">
             <input type="radio" name="announceLead" value="10">
             <span>10秒</span>
-            </label>
+          </label>
         </div>
         <div class="setting-help">基本は7秒。必要に応じて10秒へ切り替え。</div>
-        </div>
+      </div>
 
-        <div class="setting-row">
+      <div class="setting-row">
         <label>次案内を再生する</label>
         <div class="toggle-group" role="radiogroup" aria-label="次案内を再生する">
-            <label class="toggle-chip">
+          <label class="toggle-chip">
             <input type="radio" name="playNextVoice" value="on" checked>
             <span>ON</span>
-            </label>
-            <label class="toggle-chip">
+          </label>
+          <label class="toggle-chip">
             <input type="radio" name="playNextVoice" value="off">
             <span>OFF</span>
-            </label>
+          </label>
         </div>
-        <div class="setting-row">
+      </div>
+
+      <div class="setting-row">
         <label>メトロノーム音</label>
         <div class="toggle-group" role="radiogroup" aria-label="メトロノーム音">
           <label class="toggle-chip">
@@ -151,9 +161,8 @@
         <div class="setting-help">チン音を一定間隔で鳴らします。3秒以下では鳴りません。</div>
       </div>
     </div>
-        
-    </details>
-    </section>
+  </details>
+</section>
 
     <!-- ========================================
      使い方・更新履歴
@@ -175,8 +184,13 @@
         </section>
 
         <section class="note-block">
-            <h2 class="note-title">更新履歴</h2>
-            <div class="note-content">
+          <h2 class="note-title">更新履歴</h2>
+          <div class="note-content">
+            <p><strong>v2.32</strong> - メトロノーム実装 / UIの安置表示を明示化 / VOICEVOX安置案内モードを追加</p>
+            <p>　　　- メトロノーム音の OFF / 10秒毎 / 5秒毎 切替に対応</p>
+            <p>　　　- 表示ラベルを「現在」から「安置」へ調整</p>
+            <p>　　　- サークルカラミティ向けの VOICEVOX（安置案内）モードを追加</p>
+
             <p><strong>v2.31</strong> - 外部割当キーによる操作へ整理</p>
             <p>　　　- キーボード割当運用に対応</p>
             <p>　　　- 開始 / 補正キーを [ ] + - ベースへ整理</p>
@@ -224,7 +238,7 @@
          フッター
     ======================================== -->
     <div class="footer-note">
-      Rubetimer v2.31｜ローカル設定保存版<br>
+      Rubetimer v2.32｜ローカル設定保存版<br>
     </div>
 
   </main>
