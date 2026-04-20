@@ -132,35 +132,35 @@
     loopLapMs: [23750, 20750, 23250, 21000, 25000, 20750],
     phases: [
       {
-        currentText: '線上・大外',
+        currentText: '➀線上・大外',
         noteText: '-',
 
         leadParts: ['c_senjo_osoto'],
         nextParts: ['s_tsugi', 'c_senjo_osoto', 's_loop'],
       },
       {
-        currentText: '中央大・線上',
+        currentText: '➁中央大・線上',
         noteText: '遅い',
 
         leadParts: ['s_osoi', 'c_center_large_senjo'],
         nextParts: ['s_tsugi', 'c_center_large_senjo'],
       },
       {
-        currentText: '中央・網・外',
+        currentText: '➂中央・網・外',
         noteText: '-',
 
         leadParts: ['c_center_ami_soto'],
         nextParts: ['s_tsugi', 'c_center_ami_soto'],
       },
       {
-        currentText: '線上・大外',
+        currentText: '➃線上・大外',
         noteText: '遅い',
 
         leadParts: ['s_osoi', 'c_senjo_osoto'],
         nextParts: ['s_tsugi', 'c_senjo_osoto'],
       },
       {
-        currentText: '中央大・外',
+        currentText: '➄中央大・外',
         noteText: '-',
 
         leadParts: ['c_center_large_soto'],
