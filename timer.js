@@ -191,8 +191,8 @@
         nextParts: ['s_tsugi', 'g_niji', 's_loop'],
       },
       {
-        currentText: '網上・大外',
-        noteText: '外の外（安置）',
+        currentText: '外の外（安置）',
+        noteText: '網上・大外',
 
         leadParts: ['g_amisen_osoto'],
         nextParts: ['s_tsugi', 'g_amisen_osoto'],
@@ -205,8 +205,8 @@
         nextParts: ['s_tsugi', 'g_niji'],
       },
       {
-        currentText: '中央大・外',
-        noteText: '外の外（安置）',
+        currentText: '外の外（安置）',
+        noteText: '中央大・外',
 
         leadParts: ['g_center_large_soto'],
         nextParts: ['s_tsugi', 'g_center_large_soto'],
@@ -219,8 +219,8 @@
         nextParts: ['s_tsugi', 'g_niji'],
       },
       {
-        currentText: '中央、網と線の上',
-        noteText: '大外（安置）',
+        currentText: '大外（ずっと安置）',
+        noteText: '中央、網と線の上',
 
         leadParts: ['g_center_amisen'],
         nextParts: ['s_tsugi', 'g_center_amisen'],
@@ -233,8 +233,8 @@
         nextParts: ['s_tsugi', 'g_niji'],
       },
       {
-        currentText: '網上・大外',
-        noteText: '線上（安置）',
+        currentText: '線上（安置）',
+        noteText: '網上・大外',
 
         leadParts: ['g_amisen_osoto'],
         nextParts: ['s_tsugi', 'g_amisen_osoto'],
@@ -247,8 +247,8 @@
         nextParts: ['s_tsugi', 'g_niji'],
       },
       {
-        currentText: '網上・線上・外',
-        noteText: '網上（安置）',
+        currentText: '網上（安置）',
+        noteText: '網上・線上・外',
 
         leadParts: ['g_amisen_soto'],
         nextParts: ['s_tsugi', 'g_amisen_soto'],
@@ -261,8 +261,8 @@
         nextParts: ['s_tsugi', 'g_niji'],
       },
       {
-        currentText: '中央大・線上と外',
-        noteText: '外（安置）',
+        currentText: '外（安置）',
+        noteText: '中央大・線上と外',
 
         leadParts: ['g_center_senjo_soto'],
         nextParts: ['s_tsugi', 'g_center_senjo_soto'],
