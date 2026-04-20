@@ -184,8 +184,8 @@
                 23250, 23500, 23250, 23000, 23750, 22500],
     phases: [
       {
-        currentText: '虹床',
-        noteText: '-',
+        currentText: '-',
+        noteText: '虹床',
 
         leadParts: ['g_niji'],
         nextParts: ['s_tsugi', 'g_niji', 's_loop'],
@@ -198,8 +198,8 @@
         nextParts: ['s_tsugi', 'g_amisen_osoto'],
       },
       {
-        currentText: '虹床',
-        noteText: '-',
+        currentText: '-',
+        noteText: '虹床',
 
         leadParts: ['g_niji'],
         nextParts: ['s_tsugi', 'g_niji'],
@@ -212,8 +212,8 @@
         nextParts: ['s_tsugi', 'g_center_large_soto'],
       },
       {
-        currentText: '虹床',
-        noteText: '-',
+        currentText: '-',
+        noteText: '虹床',
 
         leadParts: ['g_niji'],
         nextParts: ['s_tsugi', 'g_niji'],
@@ -226,8 +226,8 @@
         nextParts: ['s_tsugi', 'g_center_amisen'],
       },
       {
-        currentText: '虹床',
-        noteText: '-',
+        currentText: '-',
+        noteText: '虹床',
 
         leadParts: ['g_niji'],
         nextParts: ['s_tsugi', 'g_niji'],
@@ -240,8 +240,8 @@
         nextParts: ['s_tsugi', 'g_amisen_osoto'],
       },
       {
-        currentText: '虹床',
-        noteText: '-',
+        currentText: '-',
+        noteText: '虹床',
 
         leadParts: ['g_niji'],
         nextParts: ['s_tsugi', 'g_niji'],
@@ -254,8 +254,8 @@
         nextParts: ['s_tsugi', 'g_amisen_soto'],
       },
       {
-        currentText: '虹床',
-        noteText: '-',
+        currentText: '-',
+        noteText: '虹床',
 
         leadParts: ['g_niji'],
         nextParts: ['s_tsugi', 'g_niji'],
