@@ -145,150 +145,248 @@
   };
  
   // loopLapMsは実測値 
-  const MODES = {
-  circle: {
-    key: 'circle',
-    label: 'サークル',
-    initialDelayMs: 5750,
-    loopLapMs: [23750, 20750, 23250, 21000, 25000, 20750],
-    phases: [
-      {
-        currentText: '➀線上・大外',
-        noteText: '-',
+// ========================================
+// ルベランギス Lv2 / Lv3 設定
+// ========================================
 
-        leadParts: ['c_senjo_osoto'],
-        nextParts: ['s_tsugi', 'c_senjo_osoto', 's_loop'],
-      },
-      {
-        currentText: '➁中央大・線上',
-        noteText: '遅い',
+const LEVELS = {
 
-        leadParts: ['s_osoi', 'c_center_large_senjo'],
-        nextParts: ['s_tsugi', 'c_center_large_senjo'],
-      },
-      {
-        currentText: '➂中央・網・外',
-        noteText: '-',
+  // =========================
+  // Lv2
+  // =========================
+  2: {
 
-        leadParts: ['c_center_ami_soto'],
-        nextParts: ['s_tsugi', 'c_center_ami_soto'],
-      },
-      {
-        currentText: '➃線上・大外',
-        noteText: '遅い',
+    // サークルカラミティ
+    circle: {
+      key: 'circle',
+      label: 'サークル',
 
-        leadParts: ['s_osoi', 'c_senjo_osoto'],
-        nextParts: ['s_tsugi', 'c_senjo_osoto'],
-      },
-      {
-        currentText: '➄中央大・外',
-        noteText: '-',
+      // 吹き出し表示から初回床まで
+      initialDelayMs: 6000,
 
-        leadParts: ['c_center_large_soto'],
-        nextParts: ['s_tsugi', 'c_center_large_soto'],
-      },
-      {
-        currentText: '➅中央・網・外',
-        noteText: '遅い',
+      // 初回以降は19.15秒周期
+      loopLapMs: [19150],
 
-        leadParts: ['s_osoi', 'c_center_ami_soto'],
-        nextParts: ['s_tsugi', 'c_center_ami_soto'],
-      },
-    ],
+      phases: [
+        {
+          currentText: '-',
+          noteText: 'サークル床',
+
+          // Lv2サークルは床形状ランダムなので、
+          // 現時点では専用音声案内を行わない
+          leadParts: [],
+          nextParts: [],
+        },
+      ],
+    },
+
+    // グランドカラミティ
+    grand: {
+      key: 'grand',
+      label: 'グランド',
+
+      // 吹き出し表示から初回床まで
+      initialDelayMs: 6800,
+
+      // 虹 → 虹 → 黄
+      // すべて17.75秒周期
+      loopLapMs: [17750, 17750, 17750],
+
+      phases: [
+        {
+          currentText: '-',
+          noteText: '虹床',
+
+          leadParts: ['g_niji'],
+          nextParts: ['s_tsugi', 'g_niji'],
+        },
+
+        {
+          currentText: '-',
+          noteText: '虹床',
+
+          leadParts: ['g_niji'],
+          nextParts: ['s_tsugi', 'g_niji'],
+        },
+
+        {
+          currentText: '溝（安置）',
+          noteText: '黄色床',
+
+          // 黄色床用の専用音声は後で追加する。
+          // 今は音声なしにしておく。
+          leadParts: [],
+          nextParts: [],
+        },
+      ],
+    },
   },
 
-  grand: {
-    key: 'grand',
-    label: 'グランド',
-    initialDelayMs: 6750,
-    loopLapMs: [22000, 24500, 22250, 24000, 22750, 23500,
-                23250, 23500, 23250, 23000, 23750, 22500],
-    phases: [
-      {
-        currentText: '-',
-        noteText: '虹床',
 
-        leadParts: ['g_niji'],
-        nextParts: ['s_tsugi', 'g_niji', 's_loop'],
-      },
-      {
-        currentText: '外の外（安置）',
-        noteText: '網上・大外',
+  // =========================
+  // Lv3
+  // =========================
+  3: {
 
-        leadParts: ['g_amisen_osoto'],
-        nextParts: ['s_tsugi', 'g_amisen_osoto'],
-      },
-      {
-        currentText: '-',
-        noteText: '虹床',
+    circle: {
+      key: 'circle',
+      label: 'サークル',
+      initialDelayMs: 5750,
+      loopLapMs: [23750, 20750, 23250, 21000, 25000, 20750],
 
-        leadParts: ['g_niji'],
-        nextParts: ['s_tsugi', 'g_niji'],
-      },
-      {
-        currentText: '外の外（安置）',
-        noteText: '中央大・外',
+      phases: [
+        {
+          currentText: '➀線上・大外',
+          noteText: '-',
 
-        leadParts: ['g_center_large_soto'],
-        nextParts: ['s_tsugi', 'g_center_large_soto'],
-      },
-      {
-        currentText: '-',
-        noteText: '虹床',
+          leadParts: ['c_senjo_osoto'],
+          nextParts: ['s_tsugi', 'c_senjo_osoto', 's_loop'],
+        },
+        {
+          currentText: '➁中央大・線上',
+          noteText: '遅い',
 
-        leadParts: ['g_niji'],
-        nextParts: ['s_tsugi', 'g_niji'],
-      },
-      {
-        currentText: '大外（ずっと安置）',
-        noteText: '中央、網と線の上',
+          leadParts: ['s_osoi', 'c_center_large_senjo'],
+          nextParts: ['s_tsugi', 'c_center_large_senjo'],
+        },
+        {
+          currentText: '➂中央・網・外',
+          noteText: '-',
 
-        leadParts: ['g_center_amisen'],
-        nextParts: ['s_tsugi', 'g_center_amisen'],
-      },
-      {
-        currentText: '-',
-        noteText: '虹床',
+          leadParts: ['c_center_ami_soto'],
+          nextParts: ['s_tsugi', 'c_center_ami_soto'],
+        },
+        {
+          currentText: '➃線上・大外',
+          noteText: '遅い',
 
-        leadParts: ['g_niji'],
-        nextParts: ['s_tsugi', 'g_niji'],
-      },
-      {
-        currentText: '線上（安置）',
-        noteText: '網上・大外',
+          leadParts: ['s_osoi', 'c_senjo_osoto'],
+          nextParts: ['s_tsugi', 'c_senjo_osoto'],
+        },
+        {
+          currentText: '➄中央大・外',
+          noteText: '-',
 
-        leadParts: ['g_amisen_osoto'],
-        nextParts: ['s_tsugi', 'g_amisen_osoto'],
-      },
-      {
-        currentText: '-',
-        noteText: '虹床',
+          leadParts: ['c_center_large_soto'],
+          nextParts: ['s_tsugi', 'c_center_large_soto'],
+        },
+        {
+          currentText: '➅中央・網・外',
+          noteText: '遅い',
 
-        leadParts: ['g_niji'],
-        nextParts: ['s_tsugi', 'g_niji'],
-      },
-      {
-        currentText: '網上（安置）',
-        noteText: '網上・線上・外',
+          leadParts: ['s_osoi', 'c_center_ami_soto'],
+          nextParts: ['s_tsugi', 'c_center_ami_soto'],
+        },
+      ],
+    },
 
-        leadParts: ['g_amisen_soto'],
-        nextParts: ['s_tsugi', 'g_amisen_soto'],
-      },
-      {
-        currentText: '-',
-        noteText: '虹床',
+    grand: {
+      key: 'grand',
+      label: 'グランド',
+      initialDelayMs: 6750,
 
-        leadParts: ['g_niji'],
-        nextParts: ['s_tsugi', 'g_niji'],
-      },
-      {
-        currentText: '外（安置）',
-        noteText: '中央大・線上と外',
+      loopLapMs: [
+        22000,
+        24500,
+        22250,
+        24000,
+        22750,
+        23500,
+        23250,
+        23500,
+        23250,
+        23000,
+        23750,
+        22500,
+      ],
 
-        leadParts: ['g_center_senjo_soto'],
-        nextParts: ['s_tsugi', 'g_center_senjo_soto'],
-      },
-    ],
+      phases: [
+        {
+          currentText: '-',
+          noteText: '虹床',
+
+          leadParts: ['g_niji'],
+          nextParts: ['s_tsugi', 'g_niji', 's_loop'],
+        },
+        {
+          currentText: '外の外（安置）',
+          noteText: '網上・大外',
+
+          leadParts: ['g_amisen_osoto'],
+          nextParts: ['s_tsugi', 'g_amisen_osoto'],
+        },
+        {
+          currentText: '-',
+          noteText: '虹床',
+
+          leadParts: ['g_niji'],
+          nextParts: ['s_tsugi', 'g_niji'],
+        },
+        {
+          currentText: '外の外（安置）',
+          noteText: '中央大・外',
+
+          leadParts: ['g_center_large_soto'],
+          nextParts: ['s_tsugi', 'g_center_large_soto'],
+        },
+        {
+          currentText: '-',
+          noteText: '虹床',
+
+          leadParts: ['g_niji'],
+          nextParts: ['s_tsugi', 'g_niji'],
+        },
+        {
+          currentText: '大外（ずっと安置）',
+          noteText: '中央、網と線の上',
+
+          leadParts: ['g_center_amisen'],
+          nextParts: ['s_tsugi', 'g_center_amisen'],
+        },
+        {
+          currentText: '-',
+          noteText: '虹床',
+
+          leadParts: ['g_niji'],
+          nextParts: ['s_tsugi', 'g_niji'],
+        },
+        {
+          currentText: '線上（安置）',
+          noteText: '網上・大外',
+
+          leadParts: ['g_amisen_osoto'],
+          nextParts: ['s_tsugi', 'g_amisen_osoto'],
+        },
+        {
+          currentText: '-',
+          noteText: '虹床',
+
+          leadParts: ['g_niji'],
+          nextParts: ['s_tsugi', 'g_niji'],
+        },
+        {
+          currentText: '網上（安置）',
+          noteText: '網上・線上・外',
+
+          leadParts: ['g_amisen_soto'],
+          nextParts: ['s_tsugi', 'g_amisen_soto'],
+        },
+        {
+          currentText: '-',
+          noteText: '虹床',
+
+          leadParts: ['g_niji'],
+          nextParts: ['s_tsugi', 'g_niji'],
+        },
+        {
+          currentText: '外（安置）',
+          noteText: '中央大・線上と外',
+
+          leadParts: ['g_center_senjo_soto'],
+          nextParts: ['s_tsugi', 'g_center_senjo_soto'],
+        },
+      ],
+    },
   },
 };
 
@@ -297,6 +395,9 @@
   ======================================== */
 
   const dom = {
+    levelToggle: document.getElementById('levelToggle'),
+    levelDisplay: document.getElementById('levelDisplay'),
+
     timerMain: document.getElementById('timerMain'),
     timerSub: document.getElementById('timerSub'),
     currentSafe: document.getElementById('currentSafe'),
@@ -329,6 +430,8 @@
 ======================================== */
 
   const state = {
+    level: 3, // 初期値はLv3
+
     mode: null,
     scrambleState: -1,
     running: false,
@@ -935,8 +1038,76 @@
     }
   }
 
+  /* ========================================
+    Lv2 / Lv3 表示更新
+  ======================================== */
+
+  function updateLevelUI() {
+    const level = state.level;
+
+    // bodyに data-level="2" / "3" を付ける
+    document.body.dataset.level = String(level);
+
+    // トグル位置
+    if (dom.levelToggle) {
+      dom.levelToggle.checked = level === 3;
+    }
+
+    // LEVEL表示
+    if (dom.levelDisplay) {
+      dom.levelDisplay.textContent = `LEVEL ${level}`;
+    }
+
+    console.log('[level]', level);
+  }
+
+  /* ========================================
+    Lv2 / Lv3 切り替え
+  ======================================== */
+
+  function changeLevel(newLevel) {
+
+    // 2と3以外は受け付けない
+    if (newLevel !== 2 && newLevel !== 3) {
+      console.warn('[changeLevel] invalid level:', newLevel);
+      return;
+    }
+
+    // 同じレベルなら何もしない
+    if (state.level === newLevel) {
+      updateLevelUI();
+      return;
+    }
+
+    /*
+      レベルを途中変更すると、
+      現在の床番号や残り時間が別ローテへ引き継がれてしまう。
+
+      その事故を防ぐため、
+      レベル変更時は必ずタイマーをResetする。
+    */
+    resetTimer();
+
+    // レベル変更
+    state.level = newLevel;
+
+    // 画面更新
+    updateLevelUI();
+
+    console.log('[changeLevel]', {
+      level: state.level,
+    });
+  }
+
   function getModeConfig(modeKey) {
-   return MODES[modeKey] || null;
+    const levelConfig = LEVELS[state.level];
+
+    if (!levelConfig) {
+      console.warn('[getModeConfig] unknown level:', state.level);
+      return null;
+    }
+
+    return levelConfig[modeKey] || null;
   }
 
   function getPhaseInfo(modeKey, scrambleState) {
@@ -1375,7 +1546,22 @@
 ======================================== */
 
   function bindEvents() {
-    const unlockOnce = async () => {
+
+    /* ----------------------------------------
+      Lv2 / Lv3 切り替え
+    ---------------------------------------- */
+
+    dom.levelToggle?.addEventListener('change', (event) => {
+
+      // checkbox ON = Lv3
+      // checkbox OFF = Lv2
+      const newLevel = event.target.checked ? 3 : 2;
+
+      changeLevel(newLevel);
+    });
+
+
+  const unlockOnce = async () => {
       await primeHowler();
 
       if (howlerPrimed) {
@@ -1481,21 +1667,23 @@
 
       switch (event.key) {
         // 新キー
-        case '[':
+        case '@':
           updateButtonState('circle');
           startMode('circle', 0);
           break;
-        case ']':
+        case '[':
           updateButtonState('grand');
           startMode('grand', 0);
           break;
 
         case '+':
         case '=':
+        case '.':
           adjustTargetTime(CONFIG.adjustStepMs);
           break;
 
         case '-':
+        case ',':
           adjustTargetTime(-CONFIG.adjustStepMs);
           break;
 
@@ -1517,6 +1705,9 @@
   function init() {
     loadSettings();
     bindEvents();
+
+    // Lv2 / Lv3 表示を初期状態へ合わせる
+    updateLevelUI();
 
     updateButtonState('initial');
     renderIdle();

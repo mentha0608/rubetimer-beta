@@ -3,12 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rubetimer v2.32</title>
+  <title>Rubetimer v2.40</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app">
     <section class="main-ui">
+      <!-- ========================================
+          Lv2 / Lv3 切り替え
+      ======================================== -->
+      <section class="level-switch-panel" aria-label="ルベランギス強さ切り替え">
+
+        <span class="level-name level-name-2">Lv.2</span>
+
+        <label class="level-switch">
+          <!-- OFF = Lv2 / ON = Lv3 -->
+          <input
+            id="levelToggle"
+            type="checkbox"
+            checked
+            aria-label="ルベランギス Lv2 / Lv3 切り替え"
+          >
+          <span class="level-slider"></span>
+        </label>
+
+        <span class="level-name level-name-3">Lv.3</span>
+
+        <strong id="levelDisplay" class="level-display">
+          LEVEL 3
+        </strong>
+
+      </section>
 
     <!-- ========================================
          タイマー表示
@@ -175,17 +200,35 @@
         <section class="note-block">
             <h2 class="note-title">使い方</h2>
             <div class="note-content">
-            <p>・ボタンは吹き出しが出た瞬間に押す想定です。</p>
-            <p>・ルベランギスの腕が１周したのを目安に押す程度です。</p>
-            <p>・少し遅れたと思った場合、押すのは「-0.5」です。「1」「2」ボタンは途中合わせ用です。</p>
+            <p>・画面上部のスイッチから、ルベランギス Lv2 / Lv3 を切り替えられます。</p>
+            <p>・Lvを切り替えるとタイマーは自動でリセットされます。戦闘前にLv表示と背景色をご確認ください。</p>
+
+            <p>・カラミティ開始時は、HP到達後にルベランギスが動きを止め、腕を回し始めるモーションを目安にボタンを押してください。</p>
+            <p>・タイマーは床が出る少し前に時報・案内が鳴るよう調整しています。</p>
+
+            <p>・押すのが少し遅れた場合は「-0.5」、少し早かった場合は「+0.5」で補正できます。</p>
+            <p>・「1」「2」などの小ボタンは、途中からタイマーを合わせるための補助ボタンです。</p>
+
+            <p>・Lv2のグランドカラミティは「虹 → 虹 → 黄」の順で繰り返します。</p>
+            <p>・Lv2の黄色床では、床のすきま（溝）が安全地帯です。</p>
+
             <p>・設定から事前読み上げ秒数を 7秒 / 10秒 で選べます。</p>
             <p>・次案内が不要な場合は、設定から再生をOFFにできます。</p>
+            <p>・メトロノーム音は OFF / 10秒毎 / 5秒毎 から選択できます。</p>
             </div>
         </section>
 
         <section class="note-block">
           <h2 class="note-title">更新履歴</h2>
           <div class="note-content">
+            <p><strong>v2.40</strong> - ルベランギス Lv2 / Lv3 切り替え機能を追加</p>
+            <p>　　　- Lv2 / Lv3 を同一画面から切り替えられるトグルスイッチを追加</p>
+            <p>　　　- Lv切り替え時にタイマーを自動リセットする安全機能を追加</p>
+            <p>　　　- 選択中のLvに応じて背景色とLEVEL表示が切り替わるよう変更</p>
+            <p>　　　- Lv2用サークルカラミティのタイマーを追加（初回6.0秒 / 以降19.15秒周期）</p>
+            <p>　　　- Lv2用グランドカラミティのタイマーを追加（初回6.8秒 / 以降17.75秒周期）</p>
+            <p>　　　- Lv2グランドの「虹 → 虹 → 黄」床ローテーションに対応</p>
+
             <p><strong>v2.32</strong> - メトロノーム実装 / UIの安置表示を明示化 / VOICEVOX安置案内モードを追加</p>
             <p>　　　- メトロノーム音の OFF / 10秒毎 / 5秒毎 切替に対応</p>
             <p>　　　- 表示ラベルを「現在」から「安置」へ調整</p>
@@ -238,7 +281,7 @@
          フッター
     ======================================== -->
     <div class="footer-note">
-      Rubetimer v2.32｜ローカル設定保存版<br>
+      Rubetimer v2.40｜Lv2 / Lv3対応版<br>
     </div>
 
   </main>
