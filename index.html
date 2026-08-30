@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rubetimer v2.40</title>
+  <title>Rubetimer v2.4.1</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -221,7 +221,12 @@
         <section class="note-block">
           <h2 class="note-title">更新履歴</h2>
           <div class="note-content">
-            <p><strong>v2.40</strong> - ルベランギス Lv2 / Lv3 切り替え機能を追加</p>
+            <p><strong>v2.4.1</strong> - タイマー開始ショートカットキーを追加</p>
+            <p>　　　- F8 でサークルカラミティを開始</p>
+            <p>　　　- F9 でグランドカラミティを開始</p>
+            <p>　　　- 従来の開始キー（@ / [）は継続して利用可能</p>
+            
+            <p><strong>v2.4.0</strong> - ルベランギス Lv2 / Lv3 切り替え機能を追加</p>
             <p>　　　- Lv2 / Lv3 を同一画面から切り替えられるトグルスイッチを追加</p>
             <p>　　　- Lv切り替え時にタイマーを自動リセットする安全機能を追加</p>
             <p>　　　- 選択中のLvに応じて背景色とLEVEL表示が切り替わるよう変更</p>
@@ -229,29 +234,29 @@
             <p>　　　- Lv2用グランドカラミティのタイマーを追加（初回6.8秒 / 以降17.75秒周期）</p>
             <p>　　　- Lv2グランドの「虹 → 虹 → 黄」床ローテーションに対応</p>
 
-            <p><strong>v2.32</strong> - メトロノーム実装 / UIの安置表示を明示化 / VOICEVOX安置案内モードを追加</p>
+            <p><strong>v2.3.2</strong> - メトロノーム実装 / UIの安置表示を明示化 / VOICEVOX安置案内モードを追加</p>
             <p>　　　- メトロノーム音の OFF / 10秒毎 / 5秒毎 切替に対応</p>
             <p>　　　- 表示ラベルを「現在」から「安置」へ調整</p>
             <p>　　　- サークルカラミティ向けの VOICEVOX（安置案内）モードを追加</p>
 
-            <p><strong>v2.31</strong> - 外部割当キーによる操作へ整理</p>
+            <p><strong>v2.3.1</strong> - 外部割当キーによる操作へ整理</p>
             <p>　　　- キーボード割当運用に対応</p>
             <p>　　　- 開始 / 補正キーを [ ] + - ベースへ整理</p>
             <p>　　　- 旧Fキー依存を廃止</p>
 
-            <p><strong>v2.30</strong> - Howler.js による音声再生基盤へ移行</p>
+            <p><strong>v2.3.0</strong> - Howler.js による音声再生基盤へ移行</p>
             <p>　　　- Safari / iPhone 向けの音声再生安定化を目的に再生処理を刷新</p>
             <p>　　　- Audio の自前管理から Howler 音源管理へ変更</p>
             <p>　　　- 初回ユーザー操作で Howler の再生基盤を初期化する処理を追加</p>
             <p>　　　- VOICE / SE / テスト再生を Howler ベースへ統一</p>
 
-            <p><strong>v2.22</strong> - Safari / iPhone 向けに音声再生処理を改善</p>
+            <p><strong>v2.2.2</strong> - Safari / iPhone 向けに音声再生処理を改善</p>
             <p>　　　- Audio の事前生成・再利用に対応</p>
             <p>　　　- 初回ユーザー操作で音声アンロック処理を追加</p>
             <p>　　　- VOICEVOX音声パーツを含む再生ソースの事前解放に対応</p>
             <p>　　　- 開始ボタン押下時にアンロック完了を待ってから開始するよう調整</p>
 
-            <p><strong>v2.21</strong> - グランドの「網・線上・外」音声が再生されない不具合を修正</p>
+            <p><strong>v2.2.1</strong> - グランドの「網・線上・外」音声が再生されない不具合を修正</p>
             <p>　　　- 設定の保存 / 読み込み処理を修正</p>
 
             <p><strong>v2.20</strong> - タイマー基準を爆発基準から床出現基準へ変更</p>
@@ -259,17 +264,17 @@
             <p>　　　- 初回床までの初期値を調整（サークル 5.7秒 / グランド 6.8秒）</p>
             <p>　　　- 次案内のタイミングを見直し</p>
 
-            <p><strong>v2.11</strong> - 設定UIを調整</p>
+            <p><strong>v2.1.1</strong> - 設定UIを調整</p>
             <p>　　　- 事前読み上げ秒数を選択式に変更</p>
             <p>　　　- 次案内の再生ON/OFF設定を追加</p>
             <p>　　　- 音量表示を設定値連動に修正</p>
 
-            <p><strong>v2.10</strong> - ボタンを押すタイミングを「吹き出しの出ている間」変更</p>
-            <p><strong>v2.02</strong> - 「中央大・線上と外」が読まれるように修正</p>
+            <p><strong>v2.1.0</strong> - ボタンを押すタイミングを「吹き出しの出ている間」変更</p>
+            <p><strong>v2.0.2</strong> - 「中央大・線上と外」が読まれるように修正</p>
             <p><strong>v2.01</strong> - ループが正常に作用していないバグをFIX</p>
             <p>　　　- ボタンのライティングが働いていなかったバグ修正</p>
             <p>　　　- 小数点が2個ついてしまうバグの修正</p>
-            <p>制作：mentha0608</p>
+            <p>制作：mentha0608（マイナ／キノ／ざらめ）</p>
             <p>音声：VOICEVOX:四国めたん</p>
             </div>
         </section>
@@ -281,7 +286,7 @@
          フッター
     ======================================== -->
     <div class="footer-note">
-      Rubetimer v2.40｜Lv2 / Lv3対応版<br>
+      Rubetimer v2.4.1｜Lv2 / Lv3対応版<br>
     </div>
 
   </main>

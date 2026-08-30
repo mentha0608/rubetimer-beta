@@ -1,5 +1,5 @@
-// Version: v2.32
-// Build: 2026-04-21
+// Version: v2.4.1
+// Build: 2026-08-30
 // Author: mentha0608
 // Voice: VOICEVOX:四国めたん
 //
@@ -8,7 +8,10 @@
 // ・ラップ時間は0.25秒単位で丸めて利用
 // ・床出現タイミング基準で案内
 // ・Howler.js による音声再生基盤へ移行
-// ・外部割当キー（[ ] + -）による操作へ整理
+// ・キーボード / 外部割当キーによる操作に対応
+// ・開始：@ / F8（サークル）、[ / F9（グランド）
+// ・時間補正：+ / = / .（+0.5秒）、- / ,（-0.5秒）
+// ・リセット：Delete
 
 (() => {
   'use strict';
@@ -1543,9 +1546,10 @@ const LEVELS = {
    - 調整ボタンイベント
    - 設定変更イベント
    - キーボード / 外部割当キーイベント
+   - F8 / F9 はコントローラーの単キー割り当て用
 ======================================== */
 
-  function bindEvents() {
+function bindEvents() {
 
     /* ----------------------------------------
       Lv2 / Lv3 切り替え
@@ -1659,44 +1663,53 @@ const LEVELS = {
         saveSettings();
       });
     });
+} // bindEvents() ここまで
 
 
+window.addEventListener('keydown', async (event) => {
+  // キーを押しっぱなしにしたときの連続入力を防止
+  if (event.repeat) return;
 
-    window.addEventListener('keydown', (event) => {
-      if (event.repeat) return;
+  switch (event.key) {
+    // サークル開始（従来キー / コントローラー割り当て用）
+    case '@':
+    case 'F8':
+      await primeHowler();
+      updateButtonState('circle');
+      startMode('circle', 0);
+      break;
 
-      switch (event.key) {
-        // 新キー
-        case '@':
-          updateButtonState('circle');
-          startMode('circle', 0);
-          break;
-        case '[':
-          updateButtonState('grand');
-          startMode('grand', 0);
-          break;
+    // グランド開始（従来キー / コントローラー割り当て用）
+    case '[':
+    case 'F9':
+      await primeHowler();
+      updateButtonState('grand');
+      startMode('grand', 0);
+      break;
 
-        case '+':
-        case '=':
-        case '.':
-          adjustTargetTime(CONFIG.adjustStepMs);
-          break;
+    // タイマーを0.5秒進める
+    case '+':
+    case '=':
+    case '.':
+      adjustTargetTime(CONFIG.adjustStepMs);
+      break;
 
-        case '-':
-        case ',':
-          adjustTargetTime(-CONFIG.adjustStepMs);
-          break;
+    // タイマーを0.5秒戻す
+    case '-':
+    case ',':
+      adjustTargetTime(-CONFIG.adjustStepMs);
+      break;
 
-        case 'Delete':
-          updateButtonState('initial');
-          resetTimer();
-          break;
+    // タイマーを停止して初期状態へ戻す
+    case 'Delete':
+      updateButtonState('initial');
+      resetTimer();
+      break;
 
-        default:
-          break;
-      }
-    });
+    default:
+      break;
   }
+});
 
   /* ========================================
      11. 初期化
